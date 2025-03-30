@@ -13,7 +13,7 @@ export const useCompleteProfile = () => {
 
   const form = useForm<ProfileSchema>({
     resolver: zodResolver(profileSchema),
-    values: {
+    defaultValues: {
       fullname: fullname ?? "",
       username: username ?? "",
       bio: bio ?? "",

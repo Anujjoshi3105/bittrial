@@ -1,6 +1,6 @@
-import { z } from "zod"
-const MAX_FILE_SIZE = 1024 * 1000
-const ACCEPTED_FILE_TYPES = ["image/jpeg", "image/jpg", "image/png"]
+import { z } from "zod";
+const MAX_FILE_SIZE = 1024 * 1000;
+const ACCEPTED_FILE_TYPES = ["image/jpeg", "image/jpg", "image/png"];
 
 export const profileSchema = z.object({
   fullname: z
@@ -31,23 +31,17 @@ export const profileSchema = z.object({
     .max(160, { message: "Must contain at most 160 character(s)" })
     .trim()
     .optional(),
-  avatar: z
-    .string()
-    .min(4, {
-      message: "Must contain at least 4 character(s)",
-    })
-    .max(65, {
-      message: "Must contain at most 65 character(s)",
-    })
-    .optional(),
+  avatar: z.string().optional(),
   avatarFile: z
     .custom<File>()
-    .refine(file => file.size <= MAX_FILE_SIZE, { message: `Max image size is 1MB.` })
+    .refine((file) => file.size <= MAX_FILE_SIZE, {
+      message: `Max image size is 1MB.`,
+    })
     .refine(
-      file => ACCEPTED_FILE_TYPES.includes(file.type),
-      "Only .jpg, .jpeg, and .png files are accepted.",
+      (file) => ACCEPTED_FILE_TYPES.includes(file.type),
+      "Only .jpg, .jpeg, and .png files are accepted."
     )
     .optional(),
-})
+});
 
-export type ProfileSchema = z.infer<typeof profileSchema>
+export type ProfileSchema = z.infer<typeof profileSchema>;

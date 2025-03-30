@@ -33,20 +33,7 @@ export const profileSchema = z.object({
     .max(160, { message: "Must contain at most 160 character(s)" })
     .trim()
     .optional(),
-  avatar: z
-    .string()
-    .min(4, {
-      message: "Must contain at least 4 character(s)",
-    })
-    .max(65, {
-      message: "Must contain at most 65 character(s)",
-    })
-    .regex(/^[a-z0-9._]+$/, {
-      message: "Must contain only lowercase letter and or number",
-    })
-    .toLowerCase()
-    .trim()
-    .optional(),
+  avatar: z.string().optional(),
   avatarFile: z
     .custom<File>()
     .refine((file) => file.size <= MAX_FILE_SIZE, {
