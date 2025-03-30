@@ -29,7 +29,6 @@ export async function getWorkspaceDetails(workspaceId: string) {
 
   if (!isValid) {
     return {
-      data: [],
       error: "Error invalid ID",
     };
   }
@@ -47,7 +46,6 @@ export async function getWorkspaceDetails(workspaceId: string) {
     };
   } catch (error) {
     return {
-      data: [],
       error: `Error ${error}`,
     };
   }

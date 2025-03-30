@@ -85,9 +85,17 @@ export const useSidebarStore = create<SidebarState & SidebarAction>()(
         if (error) throw new Error(error.message);
 
         const oldTree = get().sidebarTree;
-        const newTree = new Map(data.map((item) => [item.id, item]));
+        const newTree = new Map(
+          data
+            .filter((item) => item.workspace_id === workspaceId)
+            .map((item) => [item.id, item])
+        );
         const mergedTree = new Map(
-          oldTree ? [...oldTree, ...newTree] : [...newTree]
+          oldTree
+            ? [...oldTree, ...newTree].filter(
+                ([, item]) => item.workspace_id === workspaceId
+              )
+            : [...newTree]
         );
 
         set({

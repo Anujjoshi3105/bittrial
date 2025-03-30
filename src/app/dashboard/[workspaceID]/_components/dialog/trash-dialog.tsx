@@ -34,7 +34,9 @@ export default function TrashDialog({ children }: PropsWithChildren) {
   const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) =>
     delayedCallback(() => {
       const value = e.target.value || null;
-      getTrashAsync(value);
+      if (typeof params?.workspaceID === "string") {
+        getTrashAsync(params.workspaceID, value);
+      }
     });
 
   const restorePageHandler = async (id: string) => {
@@ -50,11 +52,17 @@ export default function TrashDialog({ children }: PropsWithChildren) {
 
   const loadMoreHandler = () => {
     if (loading) return;
-    nextPageAsync();
+    if (typeof params?.workspaceID === "string") {
+      nextPageAsync(params.workspaceID);
+    }
   };
 
   const openDialogHandler = (open: boolean) => {
-    if (open) getTrashAsync();
+    if (open) {
+      if (typeof params?.workspaceID === "string") {
+        getTrashAsync(params.workspaceID);
+      }
+    }
   };
 
   const hasData = !!list && !!list.length;

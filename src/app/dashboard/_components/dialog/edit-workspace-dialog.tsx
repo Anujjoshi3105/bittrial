@@ -55,7 +55,7 @@ import {
   fileSchema,
 } from "../../_schema";
 
-export default function WorkspaceSettingsDialog({
+export default function EditWorkspaceDialog({
   children,
   workspace,
 }: {

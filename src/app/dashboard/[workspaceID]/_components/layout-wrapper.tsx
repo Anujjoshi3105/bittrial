@@ -16,6 +16,7 @@ import {
   SidebarRail,
   SidebarFooter,
 } from "@/components/ui/sidebar";
+import WorkspaceDialog from "./workspace-dialog";
 
 export default function LayoutWrapper({
   children,
@@ -34,7 +35,7 @@ export default function LayoutWrapper({
           <SidebarTrigger className="absolute right-4 top-4 z-[100] opacity-0 group-hover/sidebar:opacity-60 hover:opacity-100" />
           <SidebarRail />
           <SidebarHeader>
-            <SidebarUser />
+            <WorkspaceDialog />
             <SidebarMenu />
           </SidebarHeader>
           <SidebarContent className="py-2 space-y-2">

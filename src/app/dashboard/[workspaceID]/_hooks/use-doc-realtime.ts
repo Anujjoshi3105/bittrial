@@ -20,7 +20,7 @@ export default function useDocRealtime(workspaceId: string) {
           event: "*",
           schema: "public",
           table: "pages",
-          //          filter: `workspace_id=eq.${workspaceId}`,
+          filter: `workspace_id=eq.${workspaceId}`,
         },
         (payload) => {
           const { eventType } = payload;

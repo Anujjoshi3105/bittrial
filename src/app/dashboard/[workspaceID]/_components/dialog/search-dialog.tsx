@@ -28,7 +28,9 @@ export default function SearchDialog({ children }: Props) {
   const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) =>
     delayedCallback(() => {
       const value = e.target.value || null;
-      if (value) getPagesAsync(value);
+      if (value && typeof params?.workspaceID === "string") {
+        getPagesAsync(params.workspaceID, value);
+      }
     });
 
   const onClickItemHandler = (id: string) => {
@@ -38,7 +40,9 @@ export default function SearchDialog({ children }: Props) {
 
   const loadMoreHandler = () => {
     if (loading) return;
-    nextPageAsync();
+    if (params?.workspaceID && typeof params.workspaceID === "string") {
+      nextPageAsync(params.workspaceID);
+    }
   };
 
   const hasData = !!list && !!list.length;

@@ -4,6 +4,7 @@ import { constructMetadata } from "@/lib/metadata";
 import { SocketProvider } from "@/lib/providers/socket.provider";
 import { ThemeProvider } from "@/lib/providers/theme.provider";
 import { Montserrat } from "next/font/google";
+import HolyLoader from "holy-loader";
 
 const montserrat = Montserrat({
   weight: ["300", "400", "500", "700"],
@@ -28,6 +29,8 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
           storageKey="station-theme">
+          <HolyLoader color="linear-gradient(to right, #ff7e5f, #feb47b)" />
+
           <SocketProvider>
             {children}
             <Toaster />
