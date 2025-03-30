@@ -1,0 +1,100 @@
+import { PASSWORD_REGEX } from "@/lib/utils";
+import { z } from "zod";
+
+const MAX_FILE_SIZE = 1024 * 1000;
+const ACCEPTED_FILE_TYPES = ["image/jpeg", "image/jpg", "image/png"];
+
+export const profileSchema = z.object({
+  fullname: z
+    .string()
+    .min(4, {
+      message: "Must contain at least 4 character(s)",
+    })
+    .max(65, {
+      message: "Must contain at most 65 character(s)",
+    })
+    .toLowerCase()
+    .trim(),
+  username: z
+    .string()
+    .min(4, {
+      message: "Must contain at least 4 character(s)",
+    })
+    .max(65, {
+      message: "Must contain at most 65 character(s)",
+    })
+    .regex(/^[a-z0-9._]+$/, {
+      message: "Must contain only lowercase letter and or number",
+    })
+    .toLowerCase()
+    .trim(),
+  bio: z
+    .string()
+    .max(160, { message: "Must contain at most 160 character(s)" })
+    .trim()
+    .optional(),
+  avatar: z
+    .string()
+    .min(4, {
+      message: "Must contain at least 4 character(s)",
+    })
+    .max(65, {
+      message: "Must contain at most 65 character(s)",
+    })
+    .regex(/^[a-z0-9._]+$/, {
+      message: "Must contain only lowercase letter and or number",
+    })
+    .toLowerCase()
+    .trim()
+    .optional(),
+  avatarFile: z
+    .custom<File>()
+    .refine((file) => file.size <= MAX_FILE_SIZE, {
+      message: `Max image size is 1MB.`,
+    })
+    .refine(
+      (file) => ACCEPTED_FILE_TYPES.includes(file.type),
+      "Only .jpg, .jpeg, and .png files are accepted."
+    )
+    .optional(),
+});
+
+export type ProfileSchema = z.infer<typeof profileSchema>;
+
+export const resetPasswordSchema = z.object({
+  password: z
+    .string({
+      required_error: "Invalid password",
+    })
+    .min(8, {
+      message: "Invalid password",
+    })
+    .max(72, {
+      message: "Must contain at most 72 character(s)",
+    })
+    .regex(PASSWORD_REGEX, {
+      message: "Invalid password",
+    }),
+});
+
+export type ResetPasswordSchema = z.infer<typeof resetPasswordSchema>;
+
+export const otpSchema = z.object({
+  code: z
+    .string()
+    .min(4, {
+      message: "Invalid verification code",
+    })
+    .trim(),
+});
+export type OTPSchema = z.infer<typeof otpSchema>;
+
+export const requestEmailSchema = z.object({
+  email: z
+    .string()
+    .min(1, { message: "Required" })
+    .email({ message: "Invalid email address" })
+    .toLowerCase()
+    .trim(),
+});
+export type RequestEmailSchema = z.infer<typeof requestEmailSchema>;
