@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
 
@@ -37,7 +36,6 @@ import {
 
 // Custom Components
 import PermissionSelect from "@/components/global/permission-select.global";
-import CollaboratorSearch from "@/components/global/collaborator-search.global";
 
 // Queries and Types
 import { updateWorkspace } from "@/lib/queries/workspace";
@@ -54,6 +52,7 @@ import {
   WorkspaceValidatorSchema,
   fileSchema,
 } from "../../_schema";
+import Invite from "@/components/global/invite";
 
 export default function EditWorkspaceDialog({
   children,
@@ -280,20 +279,8 @@ export default function EditWorkspaceDialog({
               )}
             />
 
-            {/* Collaborator Management */}
             {form.watch("permissions") === "shared" && (
-              <CollaboratorSearch
-                existingCollaborators={collaborators}
-                getCollaborator={(c) => setCollaborators([...collaborators, c])}
-                removeCollaborator={(c) =>
-                  setCollaborators(
-                    collaborators.filter((col) => col.id !== c.id)
-                  )
-                }>
-                <Button type="button" variant="secondary" size="sm">
-                  <Plus className="h-4 w-4 mr-2" /> Add collaborators
-                </Button>
-              </CollaboratorSearch>
+              <Invite id={workspace.id} />
             )}
 
             {/* Action Buttons */}

@@ -10,7 +10,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Check, Search, TrashIcon } from "lucide-react";
+import { Check, PlusIcon, Search, TrashIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { searchUser } from "@/lib/queries/auth";
@@ -24,12 +24,10 @@ import { useUserStore } from "@/lib/store/use-user-store";
 interface CollaboratorSearchProps {
   existingCollaborators: User[];
   getCollaborator: (collaborator: User) => void;
-  children: React.ReactNode;
   removeCollaborator: (collaborator: User) => void;
 }
 
 const CollaboratorSearch: React.FC<CollaboratorSearchProps> = ({
-  children,
   existingCollaborators,
   getCollaborator,
   removeCollaborator,
@@ -138,7 +136,11 @@ const CollaboratorSearch: React.FC<CollaboratorSearchProps> = ({
   return (
     <div className="space-y-4">
       <Sheet>
-        <SheetTrigger className="w-full">{children}</SheetTrigger>
+        <SheetTrigger className="w-full">
+          <Button type="button" variant="secondary" size="sm">
+            <PlusIcon /> Add collaborators
+          </Button>
+        </SheetTrigger>
         <SheetContent className="w-[400px] sm:w-[540px] flex flex-col">
           <SheetHeader>
             <SheetTitle>Search Collaborator</SheetTitle>

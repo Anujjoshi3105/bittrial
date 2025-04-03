@@ -14,7 +14,6 @@ import HeaderMoreMenuPopover from "./popover/header-more-menu-popover";
 import { useDocStore } from "@/lib/store/use-doc-store";
 import TooltipComponent from "@/components/tooltip-component";
 import AvatarComponent from "@/components/avatar-component";
-import Refresh from "./refresh";
 
 export function DocDetailHeader() {
   const params = useParams();
@@ -39,7 +38,7 @@ export function DocDetailHeader() {
           )}
 
           <p className="block max-w-[100px] truncate pl-1 text-sm md:max-w-[250px]">
-            anuj{title}
+            {title}
           </p>
 
           {saveStatus === "start" && (
@@ -97,7 +96,6 @@ export function DocDetailHeader() {
               })}
             </div>
           )}
-          <Refresh />
           <HeaderMoreMenuPopover>
             <Button variant="ghost" size="icon" className="h-7 w-7">
               <MoreHorizontalIcon className="h-4 w-4" />

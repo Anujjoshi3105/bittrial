@@ -3,7 +3,11 @@ import { toastError, toastLoading, toastSuccess } from "@/lib/helper/toast";
 import { toast } from "sonner";
 import { create } from "zustand";
 
-type Item = { error: string | null; path: string | null; signedUrl: string };
+export type Item = {
+  error: string | null;
+  path: string | null;
+  signedUrl: string;
+};
 
 type GalleryState = {
   loadPictures: boolean;
