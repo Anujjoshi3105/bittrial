@@ -11,6 +11,7 @@ import Deleted from "./_components/deleted";
 import Published from "./_components/published";
 import { useEffect, useState } from "react";
 import Reader from "./_components/reader";
+import RichEditor from "./_components/editor/rich-editor";
 
 export default function DocDetailPage() {
   const params = useParams();
@@ -29,6 +30,8 @@ export default function DocDetailPage() {
       <Cover />
       <Action />
       <Title />
+      <RichEditor />
+
       <div
         className="mx-auto min-h-32 mt-6 max-w-3xl bg-muted dark:bg-muted/20 px-4 md:px-0 cursor-text"
         onDoubleClick={() => setIsEditing(true)}>
