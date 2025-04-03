@@ -52,7 +52,7 @@ import {
   WorkspaceValidatorSchema,
   fileSchema,
 } from "../../_schema";
-import Invite from "@/components/global/invite";
+import CollaboratorSearch from "@/components/global/collaborator-search.global";
 
 export default function EditWorkspaceDialog({
   children,
@@ -280,7 +280,16 @@ export default function EditWorkspaceDialog({
             />
 
             {form.watch("permissions") === "shared" && (
-              <Invite id={workspace.id} />
+              <CollaboratorSearch
+                existingCollaborators={collaborators}
+                getCollaborator={(c) => setCollaborators([...collaborators, c])}
+                removeCollaborator={async (c) => {
+                  await removeCollaborator([c], workspace.id);
+                  setCollaborators(
+                    collaborators.filter((col) => col.id !== c.id)
+                  );
+                }}
+              />
             )}
 
             {/* Action Buttons */}

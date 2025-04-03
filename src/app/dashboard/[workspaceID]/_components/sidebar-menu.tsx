@@ -1,9 +1,16 @@
-import { HomeIcon, SearchIcon, SettingsIcon, Trash2Icon } from "lucide-react";
+import {
+  HomeIcon,
+  MailPlusIcon,
+  SearchIcon,
+  SettingsIcon,
+  Trash2Icon,
+} from "lucide-react";
 import SearchDialog from "./dialog/search-dialog";
 import TrashDialog from "./dialog/trash-dialog";
 import SidebarButton from "./sidebar-button";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import InviteDialog from "./dialog/invite-dialog";
 
 export default function SidebarMenu() {
   const params = useParams();
@@ -30,6 +37,12 @@ export default function SidebarMenu() {
           Trash
         </SidebarButton>
       </TrashDialog>
+      <InviteDialog id={params?.workspaceID as string}>
+        <SidebarButton>
+          <MailPlusIcon />
+          Invite
+        </SidebarButton>
+      </InviteDialog>
       <SidebarButton asChild>
         <Link href="/dashboard/settings">
           <SettingsIcon />

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, PropsWithChildren } from "react";
 import { User } from "@/types/supabase.types";
 import {
   addCollaborators,
@@ -26,14 +26,18 @@ import { useUserStore } from "@/lib/store/use-user-store";
 import useDebounceCallback from "@/lib/hooks/use-debounce-callback";
 import { getWorkspaceDetails } from "@/lib/queries/workspace";
 
-export default function Invite({ id }: { id: string }) {
+export default function InviteDialog({
+  id,
+  children,
+}: { id: string } & PropsWithChildren) {
   const { currentUser } = useUserStore();
   const [collaborators, setCollaborators] = useState<User[]>([]);
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [owner, setOwner] = useState<User | null>(null);
-  const { delayedCallback } = useDebounceCallback(300);
+  const [isOwner, setIsOwner] = useState(false);
+  const { delayedCallback } = useDebounceCallback(3000);
 
   // Load existing collaborators and owner on mount
   useEffect(() => {
@@ -54,7 +58,11 @@ export default function Invite({ id }: { id: string }) {
         }
 
         if (pageDetails.data?.workspaceOwner) {
-          const ownerDetails = await getUser(pageDetails.data.workspaceOwner);
+          const ownerId = pageDetails.data.workspaceOwner;
+          // Check if current user is the owner
+          setIsOwner(currentUser?.id === ownerId);
+
+          const ownerDetails = await getUser(ownerId);
           if (ownerDetails) {
             setOwner(ownerDetails);
           }
@@ -66,7 +74,7 @@ export default function Invite({ id }: { id: string }) {
     };
 
     loadDetails();
-  }, [id]);
+  }, [id, currentUser]);
 
   // Filter out current user and owner from search results
   const filteredResults = useMemo(
@@ -134,17 +142,17 @@ export default function Invite({ id }: { id: string }) {
   // User item component to avoid repetition
   const UserItem = ({
     user,
-    isOwner = false,
+    isOwnerUser = false,
     actionButton,
   }: {
     user: User;
-    isOwner?: boolean;
+    isOwnerUser?: boolean;
     onAction?: () => void;
     actionButton?: React.ReactNode;
   }) => (
     <div
       className={`p-3 flex items-center justify-between ${
-        isOwner ? "bg-muted/50" : ""
+        isOwnerUser ? "bg-muted/50" : ""
       }`}>
       <div className="flex items-center gap-2">
         <AvatarComponent
@@ -155,99 +163,102 @@ export default function Invite({ id }: { id: string }) {
         <div className="overflow-hidden">
           <div className="flex items-center gap-1">
             <p className="text-sm font-medium truncate">{user.fullname}</p>
-            {isOwner && <Crown className="size-3 text-amber-500" />}
+            {isOwnerUser && <Crown className="size-3 text-amber-500" />}
           </div>
           <p className="text-xs text-muted-foreground truncate">{user.email}</p>
         </div>
       </div>
-      {isOwner ? (
+      {isOwnerUser ? (
         <div className="px-2 py-1 text-xs bg-primary/10 text-primary rounded">
           Owner
         </div>
       ) : (
-        actionButton
+        isOwner && actionButton
       )}
     </div>
   );
 
   return (
     <Sheet>
-      <SheetTrigger asChild>
-        <Button type="button" variant="secondary" size="sm">
-          Invite
-        </Button>
-      </SheetTrigger>
+      <SheetTrigger asChild>{children}</SheetTrigger>
 
       <SheetContent className="w-full sm:max-w-md flex flex-col">
         <SheetHeader>
-          <SheetTitle>Manage Collaborators</SheetTitle>
+          <SheetTitle>
+            {isOwner ? "Manage Collaborators" : "View Collaborators"}
+          </SheetTitle>
           <SheetDescription>
-            Add or remove people who can access this document
+            {isOwner
+              ? "Add or remove people who can access this document"
+              : "People who have access to this document"}
           </SheetDescription>
         </SheetHeader>
 
         <div className="space-y-4 flex-1 flex flex-col overflow-hidden ml-2">
-          {/* Search input */}
-          <div className="relative">
-            <Search className="size-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
-            <Input
-              placeholder="Search by email or name"
-              className="pl-9"
-              value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
-            />
-          </div>
+          {/* Search input - only show for owner */}
+          {isOwner && (
+            <div className="relative">
+              <Search className="size-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
+              <Input
+                placeholder="Search by email or name"
+                className="pl-9"
+                value={searchQuery}
+                onChange={(e) => handleSearch(e.target.value)}
+              />
+            </div>
+          )}
 
           <div className="flex-1 overflow-y-auto pr-1">
-            {/* Search results */}
-            {(filteredResults.length > 0 || (searchQuery && isLoading)) && (
-              <div className="mb-4">
-                <Label className="text-sm mb-2">Search Results</Label>
-                <ScrollArea className="h-[200px] rounded-md border">
-                  <div className="p-1 space-y-2">
-                    {isLoading ? (
-                      Array(3)
-                        .fill(null)
-                        .map((_, i) => (
-                          <Skeleton key={i} className="w-full h-16" />
-                        ))
-                    ) : filteredResults.length > 0 ? (
-                      filteredResults.map((user) => (
-                        <div
-                          key={user.id}
-                          className="p-4 border animate-in fade-in bg-card/30 rounded-md flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <AvatarComponent
-                              className="size-8"
-                              src={user.imageUrl}
-                              alt={user.fullname || ""}
-                            />
-                            <div className="overflow-hidden">
-                              <p className="text-sm font-medium truncate">
-                                {user.fullname}
-                              </p>
-                              <p className="text-xs text-muted-foreground truncate">
-                                {user.email}
-                              </p>
+            {/* Search results - only show for owner */}
+            {isOwner &&
+              (filteredResults.length > 0 || (searchQuery && isLoading)) && (
+                <div className="mb-4">
+                  <Label className="text-sm mb-2">Search Results</Label>
+                  <ScrollArea className="h-[200px] rounded-md border">
+                    <div className="p-1 space-y-2">
+                      {isLoading ? (
+                        Array(3)
+                          .fill(null)
+                          .map((_, i) => (
+                            <Skeleton key={i} className="w-full h-16" />
+                          ))
+                      ) : filteredResults.length > 0 ? (
+                        filteredResults.map((user) => (
+                          <div
+                            key={user.id}
+                            className="p-4 border animate-in fade-in bg-card/30 rounded-md flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <AvatarComponent
+                                className="size-8"
+                                src={user.imageUrl}
+                                alt={user.fullname || ""}
+                              />
+                              <div className="overflow-hidden">
+                                <p className="text-sm font-medium truncate">
+                                  {user.fullname}
+                                </p>
+                                <p className="text-xs text-muted-foreground truncate">
+                                  {user.email}
+                                </p>
+                              </div>
                             </div>
+                            <Button
+                              variant="secondary"
+                              onClick={() => handleAddCollaborator(user)}
+                              size="sm">
+                              Add
+                            </Button>
                           </div>
-                          <Button
-                            variant="secondary"
-                            onClick={() => handleAddCollaborator(user)}
-                            size="sm">
-                            Add
-                          </Button>
+                        ))
+                      ) : (
+                        <div className="w-full animate-in fade-in text-sm text-muted-foreground p-4 text-center">
+                          No users found.
                         </div>
-                      ))
-                    ) : (
-                      <div className="w-full animate-in fade-in text-sm text-muted-foreground p-4 text-center">
-                        No users found.
-                      </div>
-                    )}
-                  </div>
-                </ScrollArea>
-              </div>
-            )}
+                      )}
+                    </div>
+                  </ScrollArea>
+                </div>
+              )}
 
             {/* Current collaborators */}
             <div>
@@ -257,7 +268,7 @@ export default function Invite({ id }: { id: string }) {
               <div className="rounded-md border overflow-hidden">
                 <ScrollArea className="h-[200px]">
                   {/* Owner */}
-                  {owner && <UserItem user={owner} isOwner={true} />}
+                  {owner && <UserItem user={owner} isOwnerUser={true} />}
                   {/* Collaborators */}
                   {collaborators.length > 0 ? (
                     <div className="divide-y">

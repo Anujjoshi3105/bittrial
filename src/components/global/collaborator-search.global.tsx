@@ -10,175 +10,227 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Check, PlusIcon, Search, TrashIcon } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { searchUser } from "@/lib/queries/auth";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import useDebounceCallback from "@/lib/hooks/use-debounce-callback";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
 import AvatarComponent from "@/components/avatar-component";
+import { Crown, PlusIcon, Search, TrashIcon } from "lucide-react";
 import { useUserStore } from "@/lib/store/use-user-store";
+import useDebounceCallback from "@/lib/hooks/use-debounce-callback";
+import { searchUser } from "@/lib/queries/auth";
+import { toast } from "sonner";
 
 interface CollaboratorSearchProps {
   existingCollaborators: User[];
+  owner?: User | null;
   getCollaborator: (collaborator: User) => void;
   removeCollaborator: (collaborator: User) => void;
 }
 
 const CollaboratorSearch: React.FC<CollaboratorSearchProps> = ({
   existingCollaborators,
+  owner = null,
   getCollaborator,
   removeCollaborator,
 }) => {
   const { currentUser } = useUserStore();
   const [searchResults, setSearchResults] = useState<User[]>([]);
-  const [isUsersLoading, setIsUsersLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const { delayedCallback } = useDebounceCallback(300);
+  const { delayedCallback } = useDebounceCallback(3000);
 
+  // Filter out current user, owner, and existing collaborators from search results
   const filteredResults = useMemo(
-    () => searchResults.filter((result) => result.id !== currentUser?.id),
-    [searchResults, currentUser]
+    () =>
+      searchResults.filter(
+        (result) =>
+          result.id !== currentUser?.id &&
+          result.id !== owner?.id &&
+          !existingCollaborators.some((c) => c.id === result.id)
+      ),
+    [searchResults, currentUser, owner, existingCollaborators]
   );
 
+  // Handle search input
   const handleSearch = (query: string) => {
     setSearchQuery(query);
 
     if (!query.trim()) {
       setSearchResults([]);
-      setIsUsersLoading(false);
+      setIsLoading(false);
       return;
     }
 
-    setIsUsersLoading(true);
-
+    setIsLoading(true);
     delayedCallback(async () => {
       try {
-        const response = await searchUser(query);
-        setSearchResults(response);
+        const results = await searchUser(query);
+        setSearchResults(results);
       } catch (error) {
-        console.error("Error searching for users:", error);
+        toast.error("Failed to search users");
+        console.error("Collaborator Search Error", error);
       } finally {
-        setIsUsersLoading(false);
+        setIsLoading(false);
       }
     });
   };
 
-  // Check if user is already a collaborator
-  const isCollaboratorAdded = (userId: string) =>
-    existingCollaborators.some((collaborator) => collaborator.id === userId);
-
-  const renderSearchResults = () => {
-    if (isUsersLoading) {
-      return Array(3)
-        .fill(null)
-        .map((_, i) => <Skeleton key={i} className="w-full h-16" />);
-    }
-
-    if (searchQuery && !filteredResults.length) {
-      return (
-        <div className="w-full animate-in fade-in-5 text-sm text-muted-foreground p-4 text-center">
-          No results found.
-        </div>
-      );
-    }
-
-    return filteredResults.map((user) => {
-      const isAdded = isCollaboratorAdded(user.id);
-      return (
-        <div
-          className="p-4 border animate-in fade-in-30 bg-card/30 dark:blured rounded-md flex items-center justify-between"
-          key={user.id}>
-          <div className="flex items-center gap-2">
-            <AvatarComponent
-              className="size-8"
-              src={user.imageUrl}
-              alt={user.fullname}
-            />
-            <p className="text-sm truncate max-w-[180px]">{user.email}</p>
-          </div>
-          <Button
-            variant="secondary"
-            onClick={() => getCollaborator(user)}
-            disabled={isAdded}
-            size={isAdded ? "icon" : "default"}>
-            {isAdded ? <Check className="size-4" /> : "Add"}
-          </Button>
-        </div>
-      );
-    });
-  };
-
-  const CollaboratorItem = ({ collaborator }: { collaborator: User }) => (
-    <div className="p-2 flex justify-between items-center animate-in fade-in-5 zoom-in-95">
-      <div className="flex gap-2 items-center">
+  // User item component with design from the Invite component
+  const UserItem = ({
+    user,
+    isOwner = false,
+    actionButton,
+  }: {
+    user: User;
+    isOwner?: boolean;
+    actionButton?: React.ReactNode;
+  }) => (
+    <div
+      className={`p-3 flex items-center justify-between ${
+        isOwner ? "bg-muted/50" : ""
+      }`}>
+      <div className="flex items-center gap-2">
         <AvatarComponent
           className="size-8"
-          src={collaborator.imageUrl}
-          alt={collaborator.fullname?.charAt(0)}
+          src={user.imageUrl}
+          alt={user.fullname || ""}
         />
-        <div className="text-xs gap-2 text-muted-foreground overflow-hidden overflow-ellipsis sm:w-[300px] w-[140px]">
-          <p className="capitalize text-sm">{collaborator.fullname}</p>
-          {collaborator.email}
+        <div className="overflow-hidden">
+          <div className="flex items-center gap-1">
+            <p className="text-sm font-medium truncate">{user.fullname}</p>
+            {isOwner && <Crown className="size-3 text-amber-500" />}
+          </div>
+          <p className="text-xs text-muted-foreground truncate">{user.email}</p>
         </div>
       </div>
-      <Button
-        size="mdIcon"
-        variant="destructive"
-        onClick={() => removeCollaborator(collaborator)}>
-        <TrashIcon />
-      </Button>
+      {isOwner ? (
+        <div className="px-2 py-1 text-xs bg-primary/10 text-primary rounded">
+          Owner
+        </div>
+      ) : (
+        actionButton
+      )}
     </div>
   );
 
   return (
     <div className="space-y-4">
       <Sheet>
-        <SheetTrigger className="w-full">
-          <Button type="button" variant="secondary" size="sm">
-            <PlusIcon /> Add collaborators
+        <SheetTrigger asChild>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className="w-full">
+            <PlusIcon className="size-4 mr-2" /> Add collaborators
           </Button>
         </SheetTrigger>
-        <SheetContent className="w-[400px] sm:w-[540px] flex flex-col">
+        <SheetContent className="w-full sm:max-w-md flex flex-col">
           <SheetHeader>
-            <SheetTitle>Search Collaborator</SheetTitle>
+            <SheetTitle>Add Collaborators</SheetTitle>
             <SheetDescription>
-              You can also remove collaborators after adding them from settings
-              tab.
+              Search and add people who can access this workspace
             </SheetDescription>
           </SheetHeader>
 
-          <div className="relative flex items-center gap-2 my-4">
-            <Search className="size-4 text-muted-foreground absolute left-2.5 top-1/2 -translate-y-1/2" />
-            <Input
-              name="name"
-              className="pl-8"
-              placeholder="Email"
-              onChange={(e) => handleSearch(e.target.value)}
-              value={searchQuery}
-            />
-          </div>
+          <div className="space-y-4 flex-1 flex flex-col overflow-hidden mt-4">
+            {/* Search input */}
+            <div className="relative">
+              <Search className="size-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
+              <Input
+                placeholder="Search by email or name"
+                className="pl-9"
+                value={searchQuery}
+                onChange={(e) => handleSearch(e.target.value)}
+              />
+            </div>
 
-          <ScrollArea className="flex-1 w-full pr-4">
-            <div className="flex flex-col gap-1">{renderSearchResults()}</div>
-          </ScrollArea>
+            <div className="flex-1 overflow-y-auto pr-1">
+              {/* Search results */}
+              {(filteredResults.length > 0 || (searchQuery && isLoading)) && (
+                <div className="mb-4">
+                  <Label className="text-sm mb-2">Search Results</Label>
+                  <ScrollArea className="h-[200px] rounded-md border">
+                    <div className="p-1 space-y-2">
+                      {isLoading ? (
+                        Array(3)
+                          .fill(null)
+                          .map((_, i) => (
+                            <Skeleton key={i} className="w-full h-16" />
+                          ))
+                      ) : filteredResults.length > 0 ? (
+                        filteredResults.map((user) => (
+                          <div
+                            key={user.id}
+                            className="p-4 border animate-in fade-in bg-card/30 rounded-md flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <AvatarComponent
+                                className="size-8"
+                                src={user.imageUrl}
+                                alt={user.fullname || ""}
+                              />
+                              <div className="overflow-hidden">
+                                <p className="text-sm font-medium truncate">
+                                  {user.fullname}
+                                </p>
+                                <p className="text-xs text-muted-foreground truncate">
+                                  {user.email}
+                                </p>
+                              </div>
+                            </div>
+                            <Button
+                              variant="secondary"
+                              onClick={() => getCollaborator(user)}
+                              size="sm">
+                              Add
+                            </Button>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="w-full animate-in fade-in text-sm text-muted-foreground p-4 text-center">
+                          No users found.
+                        </div>
+                      )}
+                    </div>
+                  </ScrollArea>
+                </div>
+              )}
+            </div>
+          </div>
         </SheetContent>
       </Sheet>
 
-      <div className="space-y-1">
-        <Label>Collaborators {`(${existingCollaborators.length})`}</Label>
-        <div className="max-h-[200px] w-full overflow-y-auto rounded-md border border-muted-foreground/20">
-          {existingCollaborators.length ? (
-            existingCollaborators.map((collaborator) => (
-              <CollaboratorItem
-                key={collaborator.id}
-                collaborator={collaborator}
-              />
-            ))
+      <div className="space-y-2">
+        <Label>Collaborators ({existingCollaborators.length})</Label>
+        <div className="rounded-md border overflow-hidden">
+          {/* Owner display (if provided) */}
+          {owner && <UserItem user={owner} isOwner={true} />}
+
+          {/* Collaborators list */}
+          {existingCollaborators.length > 0 ? (
+            <ScrollArea className="max-h-[200px]">
+              <div className="divide-y">
+                {existingCollaborators.map((collaborator) => (
+                  <UserItem
+                    key={collaborator.id}
+                    user={collaborator}
+                    actionButton={
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="text-destructive hover:bg-destructive/10"
+                        onClick={() => removeCollaborator(collaborator)}>
+                        <TrashIcon className="size-4" />
+                      </Button>
+                    }
+                  />
+                ))}
+              </div>
+            </ScrollArea>
           ) : (
-            <div className="w-full h-full flex items-center justify-center flex-col text-sm text-muted-foreground py-6">
+            <div className="h-16 flex items-center justify-center text-sm text-muted-foreground">
               No collaborators yet
             </div>
           )}
