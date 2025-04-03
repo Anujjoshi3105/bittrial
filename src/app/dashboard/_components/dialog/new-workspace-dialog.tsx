@@ -6,7 +6,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Plus } from "lucide-react";
 import { createWorkspace } from "@/lib/queries/workspace";
 import { addCollaborators } from "@/lib/queries/collaborator";
 import { uploadImage } from "@/lib/queries/storage";
@@ -223,11 +222,8 @@ const WorkspaceCreator: React.FC<{ closeDialog: () => void }> = ({
             getCollaborator={(c) => setCollaborators([...collaborators, c])}
             removeCollaborator={(c) =>
               setCollaborators(collaborators.filter((col) => col.id !== c.id))
-            }>
-            <Button type="button" variant="secondary" size="sm">
-              <Plus className="h-4 w-4 mr-2" /> Add collaborators
-            </Button>
-          </CollaboratorSearch>
+            }
+          />
         )}
 
         <div className="flex justify-end">
