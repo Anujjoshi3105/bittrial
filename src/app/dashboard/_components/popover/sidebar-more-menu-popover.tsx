@@ -79,9 +79,7 @@ export default function SidebarMoreMenuPopover({
               className="h-8 w-full items-center justify-start px-2 text-xs font-normal"
               onClick={() => {
                 ref.current?.click();
-                copy(
-                  `${window.origin}/dashboard/${item.workspace_id}/${item.id}`
-                );
+                copy(`${window.origin}/dashboard/${item.id}`);
               }}>
               <CopyIcon className="mr-2 h-4 w-4" />
               Copy link
@@ -105,12 +103,7 @@ export default function SidebarMoreMenuPopover({
               className="h-8 w-full items-center justify-start px-2 text-xs font-normal"
               onClick={() => {
                 ref.current?.click();
-                window.open(
-                  new URL(
-                    `/dashboard/${item.workspace_id}/${item.id}`,
-                    window.origin
-                  )
-                );
+                window.open(new URL(`/dashboard/${item.id}`, window.origin));
               }}>
               <AppWindowIcon className="mr-2 h-4 w-4" />
               Open in new tab

@@ -27,8 +27,8 @@ type TrashState = {
 };
 
 type TrashAction = {
-  getTrashAsync(workspaceId: string, keyword?: string | null): Promise<void>;
-  nextPageAsync(workspaceId: string): Promise<void>;
+  getTrashAsync(keyword?: string | null): Promise<void>;
+  nextPageAsync(): Promise<void>;
   deletePagePermanent(id: string): Promise<void>;
   restorePageAsync(id: string): Promise<void>;
 };
@@ -45,7 +45,7 @@ const initialState: TrashState = {
 
 export const useTrashStore = create<TrashAction & TrashState>()((set, get) => ({
   ...initialState,
-  async nextPageAsync(workspaceId) {
+  async nextPageAsync() {
     try {
       const size = get().size;
       const page = get().nextPage;
@@ -59,8 +59,7 @@ export const useTrashStore = create<TrashAction & TrashState>()((set, get) => ({
         .select(
           "title, emoji, description, created_at, updated_at, id, is_deleted"
         )
-        .eq("is_deleted", true)
-        .eq("workspace_id", workspaceId);
+        .eq("is_deleted", true);
 
       if (get().prevKeyword)
         query = query.ilike("title", `%${get().prevKeyword}%`);
@@ -84,7 +83,7 @@ export const useTrashStore = create<TrashAction & TrashState>()((set, get) => ({
       toastError({ description: getErrorMessage(error as Error) });
     }
   },
-  async getTrashAsync(workspaceId, keyword) {
+  async getTrashAsync(keyword) {
     const prevKeyword = get().prevKeyword;
     const isNewKeyword = keyword
       ? prevKeyword !== keyword.trim().toLowerCase()
@@ -105,8 +104,7 @@ export const useTrashStore = create<TrashAction & TrashState>()((set, get) => ({
         .select(
           "title,  description, emoji, created_at, updated_at, id, is_deleted"
         )
-        .eq("is_deleted", true)
-        .eq("workspace_id", workspaceId);
+        .eq("is_deleted", true);
 
       if (keyword) query = query.ilike("title", `%${keyword}%`);
 

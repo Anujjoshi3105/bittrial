@@ -26,22 +26,16 @@ import Link from "next/link";
 interface SidebarTreeProps {
   favorite?: boolean;
   message?: string;
-  workspaceID: string;
 }
 
 export default function SidebarTree({
-  workspaceID,
   favorite = false,
   message = "Create one to get started",
 }: SidebarTreeProps) {
   return (
-    <div className="space-y-1">
+    <div>
       <SidebarTree.Title favorite={favorite} />
-      <SidebarTree.Root
-        message={message}
-        favorite={favorite}
-        workspaceID={workspaceID}
-      />
+      <SidebarTree.Root message={message} favorite={favorite} />
     </div>
   );
 }
@@ -51,13 +45,11 @@ SidebarTree.Root = function Root({
   level = 0,
   message,
   favorite,
-  workspaceID,
 }: {
   id?: string;
   level?: number;
   message?: string;
   favorite?: boolean;
-  workspaceID: string;
 }) {
   const {
     loading,
@@ -70,7 +62,7 @@ SidebarTree.Root = function Root({
 
   // Fetch sidebar tree data on first render
   useEffectOnce(() => {
-    getSidebarTreeAsync(workspaceID, id);
+    getSidebarTreeAsync(id);
   });
 
   // Process and filter data
@@ -131,11 +123,7 @@ SidebarTree.Root = function Root({
           </div>
 
           {collapsedMap.has(item.id) && (
-            <SidebarTree.Root
-              workspaceID={workspaceID}
-              id={item.id}
-              level={level + 1}
-            />
+            <SidebarTree.Root id={item.id} level={level + 1} />
           )}
         </section>
       ))}
@@ -214,7 +202,7 @@ SidebarTree.Leaf = function Leaf({
 
   return (
     <SidebarButton asChild className="pl-1 group">
-      <Link href={`/dashboard/${item.workspace_id}/${item.id}`}>
+      <Link href={`/dashboard/${item.id}`}>
         <div className="flex items-center justify-start truncate">
           <EmojiPickerPopover
             onEmojiSelect={(emoji) =>

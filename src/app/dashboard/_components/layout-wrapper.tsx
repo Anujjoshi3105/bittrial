@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, type PropsWithChildren } from "react";
+import { type PropsWithChildren } from "react";
 import useDocRealtime from "../_hooks/use-doc-realtime";
 import Header from "./header";
 import SidebarMenu from "./sidebar-menu";
@@ -14,20 +14,25 @@ import {
   SidebarInset,
   SidebarTrigger,
   SidebarRail,
-  SidebarFooter,
 } from "@/components/ui/sidebar";
-import WorkspaceDialog from "./workspace-dialog";
+import { useUserStore } from "@/lib/store/use-user-store";
+import { useEffectOnce } from "usehooks-ts";
+import { User } from "@supabase/supabase-js";
 
 export default function LayoutWrapper({
   children,
-  workspaceId,
+  currentUser,
 }: PropsWithChildren & {
-  workspaceId: string;
+  currentUser: User;
 }) {
-  useEffect(() => {
-    if (!workspaceId) return;
-  }, [workspaceId]);
-  useDocRealtime(workspaceId);
+  const { setCurrentUser, getCurrentProfileUserAsync } = useUserStore();
+
+  useEffectOnce(() => {
+    setCurrentUser(currentUser);
+    getCurrentProfileUserAsync();
+  });
+
+  useDocRealtime();
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full">
@@ -35,20 +40,13 @@ export default function LayoutWrapper({
           <SidebarTrigger className="absolute right-4 top-4 z-[100] opacity-0 group-hover/sidebar:opacity-60 hover:opacity-100" />
           <SidebarRail />
           <SidebarHeader>
-            <WorkspaceDialog />
+            <SidebarUser />
             <SidebarMenu />
           </SidebarHeader>
           <SidebarContent className="py-2 space-y-2">
-            <SidebarTree workspaceID={workspaceId} />
-            <SidebarTree
-              workspaceID={workspaceId}
-              message="No favorite yet"
-              favorite
-            />
+            <SidebarTree />
+            <SidebarTree message="No favorite yet" favorite />
           </SidebarContent>
-          <SidebarFooter>
-            <SidebarUser />
-          </SidebarFooter>
         </Sidebar>
         <SidebarInset className="flex flex-col">
           <Header />

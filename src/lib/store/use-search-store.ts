@@ -21,12 +21,8 @@ type SearchState = {
 };
 
 type SearchAction = {
-  getPagesAsync(
-    workspaceId: string,
-    keyword: string,
-    next?: boolean
-  ): Promise<void>;
-  nextPageAsync(workspaceId: string): Promise<void>;
+  getPagesAsync(keyword: string, next?: boolean): Promise<void>;
+  nextPageAsync(): Promise<void>;
 };
 
 const initialState: SearchState = {
@@ -42,7 +38,7 @@ const initialState: SearchState = {
 export const useSearchStore = create<SearchState & SearchAction>()(
   (set, get) => ({
     ...initialState,
-    async nextPageAsync(workspaceId) {
+    async nextPageAsync() {
       try {
         const size = get().size;
         const page = get().nextPage;
@@ -54,7 +50,6 @@ export const useSearchStore = create<SearchState & SearchAction>()(
         const { data, error } = await client
           .from("pages")
           .select("title,  description, emoji, created_at, updated_at, id")
-          .eq("workspace_id", workspaceId)
           .or("is_deleted.is.null,is_deleted.is.false")
           .ilike("title", `%${get().prevKeyword}%`)
           .range(start, end)
@@ -74,7 +69,7 @@ export const useSearchStore = create<SearchState & SearchAction>()(
         toastError({ description: getErrorMessage(error as Error) });
       }
     },
-    async getPagesAsync(workspaceId, keyword) {
+    async getPagesAsync(keyword) {
       const prevKeyword = get().prevKeyword;
       const isNewKeyword = prevKeyword !== keyword.trim().toLowerCase();
 
@@ -92,7 +87,6 @@ export const useSearchStore = create<SearchState & SearchAction>()(
           .from("pages")
           .select("title,  description, emoji, created_at, updated_at, id")
           .or("is_deleted.is.null,is_deleted.is.false")
-          .eq("workspace_id", workspaceId)
           .ilike("title", `%${keyword}%`)
           .range(start, end)
           .order("created_at", { ascending: true });

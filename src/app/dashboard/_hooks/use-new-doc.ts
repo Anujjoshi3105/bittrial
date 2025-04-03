@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { type NewDocSchema, newDocSchema } from "../_schema";
 import { useRef } from "react";
@@ -15,7 +15,6 @@ type Props = {
 export default function useNewDoc({ emitActionStatus, id }: Props) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const { sidebarTreeCollapseHandler, createDocAsync } = useSidebarStore();
-  const params = useParams();
   const router = useRouter();
   const form = useForm<NewDocSchema>({
     resolver: zodResolver(newDocSchema),
@@ -33,7 +32,6 @@ export default function useNewDoc({ emitActionStatus, id }: Props) {
         id: id,
         description,
         emoji: emoji as Emoji,
-        workspace_id: params?.workspaceID as string,
       });
       if (res?.id) {
         sidebarTreeCollapseHandler(
@@ -43,7 +41,7 @@ export default function useNewDoc({ emitActionStatus, id }: Props) {
         emitActionStatus?.("success");
 
         closeButtonRef.current?.click();
-        router.push(`/dashboard/${params?.workspaceID}/${res.id}`);
+        router.push(`/dashboard/${res.id}`);
       }
     }
   );

@@ -147,34 +147,25 @@ export function ImageGenerator() {
         </div>
       </form>
 
-      {(imageUrl || isLoading) && (
+      {imageUrl && (
         <div className="border shadow-sm overflow-hidden">
-          {imageUrl ? (
-            <div className="w-full">
-              <div className="relative rounded-md aspect-square w-full">
-                <Image
-                  src={imageUrl}
-                  alt="Generated image"
-                  fill
-                  className="object-cover"
-                  priority
-                />
-              </div>
-              <div className="p-4 bg-muted/10 border-t">
-                <p className="text-sm font-medium">
-                  {prompt} •{" "}
-                  <span className="text-muted-foreground">{style} style</span>
-                </p>
-              </div>
+          <div className="w-full">
+            <div className="relative rounded-md aspect-square w-full">
+              <Image
+                src={imageUrl}
+                alt="Generated image"
+                fill
+                className="object-cover"
+                priority
+              />
             </div>
-          ) : (
-            <div className="relative aspect-square w-full flex items-center justify-center bg-muted/20">
-              <div className="flex flex-col items-center gap-4">
-                <Loader2 className="h-12 w-12 animate-spin" />
-                <p>Creating your masterpiece...</p>
-              </div>
+            <div className="p-4 bg-muted/10 border-t">
+              <p className="text-sm font-medium">
+                {prompt} •{" "}
+                <span className="text-muted-foreground">{style} style</span>
+              </p>
             </div>
-          )}
+          </div>
         </div>
       )}
     </div>

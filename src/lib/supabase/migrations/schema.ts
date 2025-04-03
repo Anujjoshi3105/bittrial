@@ -27,25 +27,8 @@ export const feedback = pgTable("feedback", {
   userId: uuid("user_id").notNull(),
 });
 
-export const workspaces = pgTable("workspaces", {
-  id: uuid("id").defaultRandom().primaryKey().notNull(),
-  createdAt: timestamp("created_at", {
-    withTimezone: true,
-    mode: "string",
-  })
-    .defaultNow()
-    .notNull(),
-  workspaceOwner: uuid("workspace_owner").notNull(),
-  emoji: jsonb("emoji"),
-  title: text("title"),
-  description: text("description"),
-  imageUrl: varchar("image_url"),
-  isDeleted: boolean("is_deleted"),
-});
-
 export const pages = pgTable("pages", {
   id: uuid("id").notNull().defaultRandom(),
-  userId: uuid("user_id").notNull(),
   title: text("title"),
   description: text("description"),
   content: jsonb("content"),
@@ -57,11 +40,7 @@ export const pages = pgTable("pages", {
   parentId: uuid("parent_id"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  workspaceId: uuid("workspace_id")
-    .notNull()
-    .references(() => workspaces.id, {
-      onDelete: "cascade",
-    }),
+  owner: uuid("owner").notNull(),
 });
 
 export const users = pgTable("users", {
@@ -76,9 +55,9 @@ export const users = pgTable("users", {
 
 export const collaborators = pgTable("collaborators", {
   id: uuid("id").defaultRandom().primaryKey().notNull(),
-  workspaceId: uuid("workspace_id")
+  pageId: uuid("page_id")
     .notNull()
-    .references(() => workspaces.id, { onDelete: "cascade" }),
+    .references(() => pages.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at", {
     withTimezone: true,
     mode: "string",

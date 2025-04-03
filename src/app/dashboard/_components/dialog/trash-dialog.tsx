@@ -1,73 +1,93 @@
-import { type Emoji } from "@/components/popover/emoji-picker-popover";
+import { Emoji } from "@/components/popover/emoji-picker-popover";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogClose,
-  DialogContent,
   DialogTitle,
+  DialogContent,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import useDebounceCallback from "@/lib/hooks/use-debounce-callback";
-import { useSearchStore } from "@/lib/store/use-search-store";
-import { FileIcon, LoaderIcon, Redo2Icon, SearchIcon } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
-import React, { useRef, type PropsWithChildren } from "react";
+import { useTrashStore } from "@/lib/store/use-trash-store";
+import { DialogClose } from "@radix-ui/react-dialog";
+import { FileIcon, LoaderIcon, Trash2Icon, Undo2Icon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { PropsWithChildren, useRef } from "react";
+import DeleteDialog from "./delete-dialog";
 
-type Props = PropsWithChildren;
-
-export default function SearchDialog({ children }: Props) {
+export default function TrashDialog({ children }: PropsWithChildren) {
   const router = useRouter();
-  const params = useParams();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const { delayedCallback } = useDebounceCallback(500);
-  const { getPagesAsync, loading, list, more, nextPageAsync, prevKeyword } =
-    useSearchStore();
+  const {
+    getTrashAsync,
+    restorePageAsync,
+    loading,
+    list,
+    more,
+    nextPageAsync,
+    prevKeyword,
+  } = useTrashStore();
 
   const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) =>
     delayedCallback(() => {
       const value = e.target.value || null;
-      if (value && typeof params?.workspaceID === "string") {
-        getPagesAsync(params.workspaceID, value);
-      }
+
+      getTrashAsync(value);
     });
+
+  const restorePageHandler = async (id: string) => {
+    await restorePageAsync(id);
+    closeButtonRef.current?.click();
+    router.push(`/dashboard/${id}`);
+  };
 
   const onClickItemHandler = (id: string) => {
     closeButtonRef.current?.click();
-    router.push(`/dashboard/${params?.workspaceID}/${id}`);
+    router.push(`/dashboard/${id}`);
   };
 
   const loadMoreHandler = () => {
     if (loading) return;
-    if (params?.workspaceID && typeof params.workspaceID === "string") {
-      nextPageAsync(params.workspaceID);
+    nextPageAsync();
+  };
+
+  const openDialogHandler = (open: boolean) => {
+    if (open) {
+      getTrashAsync();
     }
   };
 
   const hasData = !!list && !!list.length;
 
   return (
-    <Dialog>
+    <Dialog onOpenChange={openDialogHandler}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogTitle />
-      <DialogContent className="top-[5%] flex w-[90%] translate-y-[0] flex-col gap-0 rounded-xl p-0 md:!max-w-xl">
-        <SearchDialog.Title />
+      <DialogContent
+        autoFocus={false}
+        onOpenAutoFocus={(e) => e.preventDefault()}
+        className="top-[5%] flex w-[90%] translate-y-[0] flex-col gap-0 overflow-hidden rounded-xl p-0 md:!max-w-xl">
+        <TrashDialog.Title />
         <div className="px-3 pb-3">
           <Input
-            type="text"
-            placeholder="Type to search page by title..."
+            type="test"
+            placeholder="Type to search page in trash..."
             className="rounded-xl"
             onChange={onChangeHandler}
+            autoFocus={false}
           />
         </div>
 
-        <SearchDialog.Loading isShow={loading && !list} />
-        <SearchDialog.EmptySearchResult
+        <TrashDialog.Loading isShow={loading && !list} />
+        <TrashDialog.Empty isShow={!loading && !hasData && !prevKeyword} />
+        <TrashDialog.EmptySearchResult
           isShow={!loading && !hasData && !!prevKeyword}
           keyword={prevKeyword}
         />
-        <SearchDialog.SearchKeyword
+
+        <TrashDialog.SearchKeyword
           keyword={prevKeyword}
           isShow={hasData && !!prevKeyword}
         />
@@ -80,9 +100,10 @@ export default function SearchDialog({ children }: Props) {
 
                 return (
                   <div
+                    title="Click to open"
                     key={item.id}
                     role="button"
-                    className="group flex h-10 max-w-full items-center gap-x-2 border-b px-3 transition hover:bg-secondary"
+                    className="relative flex h-10 max-w-full items-center gap-x-2 border-b px-3 transition hover:bg-secondary"
                     onClick={() => onClickItemHandler(item.id)}>
                     {emoji?.native ? (
                       <span
@@ -102,14 +123,34 @@ export default function SearchDialog({ children }: Props) {
                       {item.title}
                     </span>
 
-                    <div className="ml-auto hidden group-hover:block">
-                      <Redo2Icon className="h-4 w-4 -rotate-180 text-muted-foreground" />
+                    <div
+                      className="absolute right-0 top-0 flex h-full items-center gap-x-1 pr-3"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}>
+                      <Button
+                        title="Click to restore"
+                        className="h-6 w-6 text-muted-foreground hover:bg-primary/10"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => restorePageHandler(item.id)}>
+                        <Undo2Icon size={16} />
+                      </Button>
+                      <DeleteDialog id={item.id}>
+                        <Button
+                          title="Click to delete"
+                          className="h-6 w-6 text-muted-foreground hover:bg-primary/10"
+                          variant="ghost"
+                          size="icon">
+                          <Trash2Icon size={16} />
+                        </Button>
+                      </DeleteDialog>
                     </div>
                   </div>
                 );
               })}
 
-              <SearchDialog.LoadMore
+              <TrashDialog.LoadMore
                 loading={loading}
                 onClickHandler={loadMoreHandler}
                 isShowLoadMoreButton={hasData && more}
@@ -128,16 +169,22 @@ export default function SearchDialog({ children }: Props) {
   );
 }
 
-SearchDialog.Title = function Title() {
-  return (
-    <div className="mb-1 flex items-center justify-start p-3 ">
-      <SearchIcon className="mr-2 h-4 w-4" />
-      <p className="text-base font-medium leading-none">Search</p>
-    </div>
-  );
+TrashDialog.SearchKeyword = function SearchKeyword(props: {
+  keyword: string | null;
+  isShow: boolean;
+}) {
+  if (props.isShow) {
+    return (
+      <p className="px-3 py-2 text-xs text-muted-foreground">
+        Showing search result for{" "}
+        <i className="font-medium text-primary">{props.keyword}</i>
+      </p>
+    );
+  }
+  return null;
 };
 
-SearchDialog.Loading = function Loading(props: { isShow: boolean }) {
+TrashDialog.Loading = function Loading(props: { isShow: boolean }) {
   if (props.isShow) {
     return (
       <div className="flex h-28 items-center justify-center text-muted-foreground">
@@ -148,7 +195,27 @@ SearchDialog.Loading = function Loading(props: { isShow: boolean }) {
   return null;
 };
 
-SearchDialog.EmptySearchResult = function EmptySearch(props: {
+TrashDialog.Title = function Title() {
+  return (
+    <div className="mb-1 flex items-center justify-start p-3 ">
+      <Trash2Icon className="mr-2 h-4 w-4" />
+      <p className="text-base font-medium leading-none">Trash</p>
+    </div>
+  );
+};
+
+TrashDialog.Empty = function Empty(props: { isShow: boolean }) {
+  if (props.isShow) {
+    return (
+      <div className="flex h-28 items-center justify-center text-muted-foreground">
+        <p className="text-sm">Empty trash</p>
+      </div>
+    );
+  }
+  return null;
+};
+
+TrashDialog.EmptySearchResult = function EmptySearch(props: {
   isShow: boolean;
   keyword: string | null;
 }) {
@@ -165,22 +232,7 @@ SearchDialog.EmptySearchResult = function EmptySearch(props: {
   return null;
 };
 
-SearchDialog.SearchKeyword = function SearchKeyword(props: {
-  keyword: string | null;
-  isShow: boolean;
-}) {
-  if (props.isShow) {
-    return (
-      <p className="px-3 py-2 text-xs text-muted-foreground">
-        Showing search result for{" "}
-        <i className="font-medium text-primary">{props.keyword}</i>
-      </p>
-    );
-  }
-  return null;
-};
-
-SearchDialog.LoadMore = function LoadMore(props: {
+TrashDialog.LoadMore = function LoadMore(props: {
   isShowLoadMoreButton: boolean;
   loading: boolean;
   onClickHandler: (e: React.MouseEvent<HTMLButtonElement>) => void;

@@ -3,14 +3,12 @@ import SearchDialog from "./dialog/search-dialog";
 import TrashDialog from "./dialog/trash-dialog";
 import SidebarButton from "./sidebar-button";
 import Link from "next/link";
-import { useParams } from "next/navigation";
 
 export default function SidebarMenu() {
-  const params = useParams();
   return (
     <div className="pb-3">
       <SidebarButton asChild>
-        <Link href={`/dashboard/${params?.workspaceID}`}>
+        <Link href="/dashboard">
           <HomeIcon />
           Home
         </Link>
