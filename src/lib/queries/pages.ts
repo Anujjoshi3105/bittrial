@@ -2,7 +2,7 @@
 
 import db from "@/lib/supabase/db";
 import { users, pages } from "@/lib/supabase/migrations/schema";
-import { notExists, and, eq } from "drizzle-orm";
+import { notExists, and, eq, desc } from "drizzle-orm";
 import { collaborators } from "@/lib/supabase/schema";
 import { validate } from "uuid";
 import { createClient } from "../supabase/utils/server";
@@ -60,7 +60,21 @@ export async function getPrivatePages() {
   if (!userId) return [];
 
   const privatePages = await db
-    .select()
+    .select({
+      id: pages.id,
+      title: pages.title,
+      description: pages.description,
+      content: pages.content,
+      emoji: pages.emoji,
+      image_url: pages.imageUrl,
+      is_deleted: pages.isDeleted,
+      is_favorite: pages.isFavorite,
+      is_published: pages.isPublished,
+      parent_id: pages.parentId,
+      updated_at: pages.updatedAt,
+      created_at: pages.createdAt,
+      owner: pages.owner,
+    })
     .from(pages)
     .where(
       and(
@@ -72,7 +86,8 @@ export async function getPrivatePages() {
         ),
         eq(pages.owner, userId)
       )
-    );
+    )
+    .orderBy(desc(pages.createdAt));
 
   return privatePages;
 }
