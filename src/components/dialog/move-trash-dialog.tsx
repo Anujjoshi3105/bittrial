@@ -37,7 +37,7 @@ export default function MoveToTrashDialog({
     emitActionStatus?.("success");
 
     deleteDocAsync(id);
-    if (doc && doc.id === id) router.push("/dashboard");
+    if (doc && doc.id === id) router.push(`/dashboard/${doc.workspace_id}/doc`);
   };
 
   return (

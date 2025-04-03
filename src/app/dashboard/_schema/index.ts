@@ -1,59 +1,39 @@
 import { z } from "zod";
+const MAX_FILE_SIZE = 1024 * 1000 * 5;
+const ACCEPTED_FILE_TYPES = [
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+];
 
-export const newDocSchema = z.object({
-  title: z
-    .string({
-      required_error: "Invalid title",
+export const WorkspaceValidator = z.object({
+  title: z.string().min(1, { message: "Workspace name is required" }),
+  description: z.string().min(1, { message: "Description is required" }),
+  permissions: z.enum(["private", "shared"], {
+    message: "Invalid permission type",
+  }),
+  bannerFile: z
+    .custom<File>()
+    .refine((file) => file.size <= MAX_FILE_SIZE, {
+      message: `Max image size is 5MB.`,
     })
-    .min(1, { message: "Must contain at least 1 character" })
-    .max(65, { message: "Must contain at more 65 character(s)" })
-    .trim(),
-  description: z
-    .string({
-      required_error: "Invalid description",
-    })
-    .min(10, { message: "Must contain at least 10 character" })
-    .max(200, { message: "Must contain at more 200 character(s)" })
-    .trim(),
-  emoji: z
-    .object({
-      id: z.string(),
-      keywords: z.array(z.string()),
-      name: z.string(),
-      native: z.string(),
-      shortcodes: z.string(),
-      unified: z.string(),
-    })
-    .nullable(),
+    .refine(
+      (file) => ACCEPTED_FILE_TYPES.includes(file.type),
+      "Only .jpg, .jpeg, and .png files are accepted."
+    )
+    .optional(),
 });
 
-export type NewDocSchema = z.infer<typeof newDocSchema>;
+export type WorkspaceValidatorSchema = z.infer<typeof WorkspaceValidator>;
 
-export const renameDocSchema = z.object({
-  title: z
-    .string({
-      required_error: "Invalid title",
-    })
-    .min(1, { message: "Must contain at least 1 character" })
-    .max(65, { message: "Must contain at more 65 character(s)" })
-    .trim(),
-  description: z
-    .string({
-      required_error: "Invalid description",
-    })
-    .min(10, { message: "Must contain at least 10 character" })
-    .max(200, { message: "Must contain at more 200 character(s)" })
-    .trim(),
-  emoji: z
-    .object({
-      id: z.string(),
-      keywords: z.array(z.string()),
-      name: z.string(),
-      native: z.string(),
-      shortcodes: z.string(),
-      unified: z.string(),
-    })
-    .nullable(),
-});
-
-export type RenameDocSchema = z.infer<typeof renameDocSchema>;
+export const fileSchema = z
+  .custom<File>()
+  .refine((file) => file.size <= MAX_FILE_SIZE, {
+    message: `Max image size is 1MB.`,
+  })
+  .refine(
+    (file) => ACCEPTED_FILE_TYPES.includes(file.type),
+    "Only .jpg, .jpeg, and .png files are accepted."
+  );

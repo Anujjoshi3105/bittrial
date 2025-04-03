@@ -38,34 +38,34 @@ export type Database = {
         Row: {
           created_at: string;
           id: string;
-          page_id: string;
           user_id: string;
+          workspace_id: string;
         };
         Insert: {
           created_at?: string;
           id?: string;
-          page_id: string;
           user_id: string;
+          workspace_id: string;
         };
         Update: {
           created_at?: string;
           id?: string;
-          page_id?: string;
           user_id?: string;
+          workspace_id?: string;
         };
         Relationships: [
-          {
-            foreignKeyName: "collaborators_page_id_fkey";
-            columns: ["page_id"];
-            isOneToOne: false;
-            referencedRelation: "pages";
-            referencedColumns: ["id"];
-          },
           {
             foreignKeyName: "collaborators_user_id_users_id_fk";
             columns: ["user_id"];
             isOneToOne: false;
             referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "collaborators_workspace_id_workspaces_id_fk";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
             referencedColumns: ["id"];
           }
         ];
@@ -108,10 +108,11 @@ export type Database = {
           is_deleted: boolean | null;
           is_favorite: boolean | null;
           is_published: boolean | null;
-          owner: string;
           parent_id: string | null;
           title: string | null;
           updated_at: string;
+          user_id: string;
+          workspace_id: string | null;
         };
         Insert: {
           content?: Json | null;
@@ -123,10 +124,11 @@ export type Database = {
           is_deleted?: boolean | null;
           is_favorite?: boolean | null;
           is_published?: boolean | null;
-          owner?: string;
           parent_id?: string | null;
           title?: string | null;
           updated_at?: string;
+          user_id?: string;
+          workspace_id?: string | null;
         };
         Update: {
           content?: Json | null;
@@ -138,12 +140,21 @@ export type Database = {
           is_deleted?: boolean | null;
           is_favorite?: boolean | null;
           is_published?: boolean | null;
-          owner?: string;
           parent_id?: string | null;
           title?: string | null;
           updated_at?: string;
+          user_id?: string;
+          workspace_id?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "pages_workspace_id_workspaces_id_fk";
+            columns: ["workspace_id"];
+            isOneToOne: false;
+            referencedRelation: "workspaces";
+            referencedColumns: ["id"];
+          }
+        ];
       };
       users: {
         Row: {
@@ -172,6 +183,42 @@ export type Database = {
           id?: string;
           image_url?: string | null;
           username?: string | null;
+        };
+        Relationships: [];
+      };
+      workspaces: {
+        Row: {
+          created_at: string;
+          description: string | null;
+          emoji: Json | null;
+          id: string;
+          image_url: string | null;
+          is_deleted: boolean | null;
+          title: string | null;
+          updated_at: string;
+          workspace_owner: string;
+        };
+        Insert: {
+          created_at?: string;
+          description?: string | null;
+          emoji?: Json | null;
+          id?: string;
+          image_url?: string | null;
+          is_deleted?: boolean | null;
+          title?: string | null;
+          updated_at?: string;
+          workspace_owner: string;
+        };
+        Update: {
+          created_at?: string;
+          description?: string | null;
+          emoji?: Json | null;
+          id?: string;
+          image_url?: string | null;
+          is_deleted?: boolean | null;
+          title?: string | null;
+          updated_at?: string;
+          workspace_owner?: string;
         };
         Relationships: [];
       };

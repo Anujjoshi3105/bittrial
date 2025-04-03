@@ -14,7 +14,10 @@ import HeaderMoreMenuPopover from "./popover/header-more-menu-popover";
 import { useDocStore } from "@/lib/store/use-doc-store";
 import TooltipComponent from "@/components/tooltip-component";
 import AvatarComponent from "@/components/avatar-component";
+<<<<<<< HEAD:src/app/dashboard/[workspaceID]/[docID]/_components/header.tsx
+=======
 import Invite from "@/components/dialog/invite";
+>>>>>>> main:src/app/dashboard/[docID]/_components/header.tsx
 
 export function DocDetailHeader() {
   const params = useParams();
@@ -97,7 +100,10 @@ export function DocDetailHeader() {
               })}
             </div>
           )}
+<<<<<<< HEAD:src/app/dashboard/[workspaceID]/[docID]/_components/header.tsx
+=======
           <Invite id={params.docID as string} />
+>>>>>>> main:src/app/dashboard/[docID]/_components/header.tsx
           <HeaderMoreMenuPopover>
             <Button variant="ghost" size="icon" className="h-7 w-7">
               <MoreHorizontalIcon className="h-4 w-4" />

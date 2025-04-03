@@ -1,5 +1,5 @@
 {
-  "id": "28627f7e-669c-490d-bd4b-42a0237ed069",
+  "id": "0a3b3189-7091-4fb8-b7d3-f45c9f6b1f84",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -15,8 +15,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "page_id": {
-          "name": "page_id",
+        "workspace_id": {
+          "name": "workspace_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -37,16 +37,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "collaborators_page_id_pages_id_fk": {
-          "name": "collaborators_page_id_pages_id_fk",
+        "collaborators_workspace_id_workspaces_id_fk": {
+          "name": "collaborators_workspace_id_workspaces_id_fk",
           "tableFrom": "collaborators",
-          "tableTo": "pages",
-          "columnsFrom": [
-            "page_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "tableTo": "workspaces",
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -54,12 +50,8 @@
           "name": "collaborators_user_id_users_id_fk",
           "tableFrom": "collaborators",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -132,6 +124,12 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
         "title": {
           "name": "title",
           "type": "text",
@@ -200,15 +198,25 @@
           "notNull": true,
           "default": "now()"
         },
-        "owner": {
-          "name": "owner",
+        "workspace_id": {
+          "name": "workspace_id",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "pages_workspace_id_workspaces_id_fk": {
+          "name": "pages_workspace_id_workspaces_id_fk",
+          "tableFrom": "pages",
+          "tableTo": "workspaces",
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -270,11 +278,72 @@
         "users_username_unique": {
           "name": "users_username_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "username"
-          ]
+          "columns": ["username"]
         }
       },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.workspaces": {
+      "name": "workspaces",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "workspace_owner": {
+          "name": "workspace_owner",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "emoji": {
+          "name": "emoji",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "image_url": {
+          "name": "image_url",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_deleted": {
+          "name": "is_deleted",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -284,13 +353,7 @@
     "public.FEEDBACK_FEEL": {
       "name": "FEEDBACK_FEEL",
       "schema": "public",
-      "values": [
-        "TERRIBLE",
-        "BAD",
-        "OKAY",
-        "GOOD",
-        "AMAZING"
-      ]
+      "values": ["TERRIBLE", "BAD", "OKAY", "GOOD", "AMAZING"]
     }
   },
   "schemas": {},

@@ -20,7 +20,7 @@ type SidebarAction = {
   _insertIntoSidebarTree(doc: Page & { is_deleted: boolean | null }): void;
   _deleteFromSidebarTree(doc: Page & { is_deleted: boolean | null }): void;
   _updateSidebarTree(doc: Page & { is_deleted: boolean | null }): void;
-  getSidebarTreeAsync: (id?: string) => void;
+  getSidebarTreeAsync: (workspaceId: string, id?: string) => void;
   renameDocAsync(opt: {
     id: string;
     title: string;
@@ -33,6 +33,7 @@ type SidebarAction = {
     title?: string;
     description?: string;
     emoji?: Emoji;
+    workspace_id: string;
   }): Promise<{ id: string; parent_id: string | null } | void>;
 };
 
@@ -62,14 +63,17 @@ export const useSidebarStore = create<SidebarState & SidebarAction>()(
       if (eventType === "DELETE") return get()._deleteFromSidebarTree(doc);
       if (eventType === "UPDATE") return get()._updateSidebarTree(doc);
     },
-    async getSidebarTreeAsync(id) {
+    async getSidebarTreeAsync(workspaceId, id) {
       if (id && get().childExistInSidebarTree(id)) return;
 
       const loading = get().loading;
       set({ loading: { ...loading, [id ?? "root"]: true } });
 
       try {
-        let query = client.from("pages").select("*");
+        let query = client
+          .from("pages")
+          .select("*")
+          .eq("workspace_id", workspaceId);
 
         if (id) query = query.eq("parent_id", id);
         else query = query.is("parent_id", null);
@@ -81,9 +85,17 @@ export const useSidebarStore = create<SidebarState & SidebarAction>()(
         if (error) throw new Error(error.message);
 
         const oldTree = get().sidebarTree;
-        const newTree = new Map(data.map((item) => [item.id, item]));
+        const newTree = new Map(
+          data
+            .filter((item) => item.workspace_id === workspaceId)
+            .map((item) => [item.id, item])
+        );
         const mergedTree = new Map(
-          oldTree ? [...oldTree, ...newTree] : [...newTree]
+          oldTree
+            ? [...oldTree, ...newTree].filter(
+                ([, item]) => item.workspace_id === workspaceId
+              )
+            : [...newTree]
         );
 
         set({
@@ -201,7 +213,7 @@ export const useSidebarStore = create<SidebarState & SidebarAction>()(
       }
     },
 
-    async createDocAsync({ id, title, description, emoji }) {
+    async createDocAsync({ id, title, description, emoji, workspace_id }) {
       const cid = id ?? "create";
       const tid = toastLoading({
         description: "Creating new page...",
@@ -215,6 +227,7 @@ export const useSidebarStore = create<SidebarState & SidebarAction>()(
             title: title ?? "untitled",
             description: description ?? "",
             emoji: emoji ?? null,
+            workspace_id: workspace_id ?? null,
           })
           .select("id, parent_id")
           .single();
