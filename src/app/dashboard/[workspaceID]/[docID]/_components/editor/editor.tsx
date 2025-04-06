@@ -68,9 +68,6 @@ const extensions = [
 
 const Editor = () => {
   const { doc, updateDocAsync } = useDocStore();
-  const [initialContent, setInitialContent] = useState<null | JSONContent>(
-    null
-  );
   const [openNode, setOpenNode] = useState(false);
   const [openColor, setOpenColor] = useState(false);
   const [openLink, setOpenLink] = useState(false);
@@ -84,16 +81,19 @@ const Editor = () => {
     },
     500
   );
-  useEffect(() => {
-    setInitialContent(doc?.content as JSONContent);
-  }, []);
 
+  useEffect(() => {
+    if (editor) {
+      editor.commands.setContent(doc?.content as JSONContent, false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
     <div className="relative w-full max-w-screen-lg">
       <EditorRoot>
         <EditorToolbar editor={editor} />
         <EditorContent
-          initialContent={initialContent!}
+          initialContent={doc?.content as JSONContent}
           extensions={extensions}
           className="relative min-h-[500px] w-full max-w-screen-lg bg-muted sm:mb-[calc(20vh)] sm:shadow-lg"
           editorProps={{
