@@ -5,6 +5,12 @@ import ms from "ms";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+export const NODE_HANDLES_SELECTED_STYLE_CLASSNAME =
+  "node-handles-selected-style";
+
+export function isValidUrl(url: string) {
+  return /^https?:\/\/\S+$/.test(url);
+}
 
 export function randomColor() {
   const h = Math.floor(Math.random() * 360);

@@ -1,62 +1,53 @@
-"use client";
+import React from "react";
+import { BlockquoteToolbar } from "@/components/toolbars/blockquote";
+import { BoldToolbar } from "@/components/toolbars/bold";
+import { UnderlineToolbar } from "@/components/toolbars/underline";
+import { BulletListToolbar } from "@/components/toolbars/bullet-list";
+import { CodeToolbar } from "@/components/toolbars/code";
+import { CodeBlockToolbar } from "@/components/toolbars/code-block";
+import { HardBreakToolbar } from "@/components/toolbars/hard-break";
+import { HorizontalRuleToolbar } from "@/components/toolbars/horizontal-rule";
+import { ItalicToolbar } from "@/components/toolbars/italic";
+import { OrderedListToolbar } from "@/components/toolbars/ordered-list";
+import { StrikeThroughToolbar } from "@/components/toolbars/strikethrough";
+import { ToolbarProvider } from "@/components/toolbars/toolbar-provider";
+import { SearchAndReplaceToolbar } from "@/components/toolbars/search-and-replace-toolbar";
+import { ImagePlaceholderToolbar } from "@/components/toolbars/image-placeholder-toolbar";
+import { Separator } from "@/components/ui/separator";
+import { EditorInstance } from "novel";
 
-import React, { useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import Quill from "quill";
-
-export default function Toolbar({ quill }: { quill: Quill }) {
-  // Undo/Redo handlers
-  useEffect(() => {
-    if (!quill) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "z") {
-        quill.history.undo();
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key === "y") {
-        quill.history.redo();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [quill]);
-
+export default function EditorToolbar({
+  editor,
+}: {
+  editor: EditorInstance | null;
+}) {
   return (
-    <div id="toolbar" className="flex items-center gap-2 p-2 border-b">
-      {/* Default Quill toolbar */}
-      <span className="ql-formats">
-        <button className="ql-bold" />
-        <button className="ql-italic" />
-        <button className="ql-underline" />
-        <button className="ql-strike" />
-      </span>
-      <span className="ql-formats">
-        <button className="ql-blockquote" />
-        <button className="ql-code-block" />
-      </span>
-      <span className="ql-formats">
-        <select className="ql-header">
-          <option value="1" />
-          <option value="2" />
-          <option selected />
-        </select>
-      </span>
-      <span className="ql-formats">
-        <select className="ql-color" />
-        <select className="ql-background" />
-      </span>
-      <span className="ql-formats">
-        <select className="ql-align" />
-      </span>
+    <div className="flex w-full items-center py-2 px-2 justify-between border-b sticky top-0 left-0 bg-background z-20 rounded-t-lg">
+      {editor && (
+        <ToolbarProvider editor={editor}>
+          <div className="flex items-center gap-2 flex-wrap">
+            <BoldToolbar />
+            <UnderlineToolbar />
+            <ItalicToolbar />
+            <StrikeThroughToolbar />
+            <BulletListToolbar />
+            <OrderedListToolbar />
+            <CodeToolbar />
+            <CodeBlockToolbar />
+            <HorizontalRuleToolbar />
+            <BlockquoteToolbar />
+            <HardBreakToolbar />
 
-      {/* Custom AI Button */}
-      <Button className="ml-auto bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
-        AI
-      </Button>
+            {/* Add Search and Replace to the toolbar */}
+            <Separator orientation="vertical" className="h-7" />
+            <SearchAndReplaceToolbar />
+
+            {/* Add Image Placeholder to the toolbar */}
+            <Separator orientation="vertical" className="h-7" />
+            <ImagePlaceholderToolbar />
+          </div>
+        </ToolbarProvider>
+      )}
     </div>
   );
 }

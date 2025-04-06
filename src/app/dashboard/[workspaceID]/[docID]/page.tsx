@@ -9,14 +9,12 @@ import Title from "./_components/title";
 import Editor from "./_components/editor/editor";
 import Deleted from "./_components/deleted";
 import Published from "./_components/published";
-import { useEffect, useState } from "react";
-import Reader from "./_components/reader";
+import { useEffect } from "react";
 
 export default function DocDetailPage() {
   const params = useParams();
   const id = params?.docID as string;
-  const { getDocAsync, loadingDoc } = useDocStore();
-  const [isEditing, setIsEditing] = useState(false);
+  const { getDocAsync } = useDocStore();
 
   useEffect(() => {
     getDocAsync(id);
@@ -29,10 +27,8 @@ export default function DocDetailPage() {
       <Cover />
       <Action />
       <Title />
-      <div
-        className="mx-auto min-h-32 mt-6 max-w-3xl bg-muted dark:bg-muted/20 px-4 md:px-0 cursor-text"
-        onDoubleClick={() => setIsEditing(true)}>
-        {!isEditing || loadingDoc ? <Reader /> : <Editor />}
+      <div className="mx-auto min-h-32 mt-6 max-w-3xl bg-muted dark:bg-muted/20 px-4 md:px-0 cursor-text">
+        <Editor />
       </div>
     </ScrollArea>
   );

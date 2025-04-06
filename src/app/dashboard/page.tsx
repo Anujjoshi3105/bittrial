@@ -26,10 +26,12 @@ function WorkspaceSectionSkeleton() {
 async function Section({
   title,
   workspaces,
+  isOwner = true,
 }: {
   title: string;
   workspaces: Workspace[];
   fetchWorkspaces: () => Promise<Workspace[]>;
+  isOwner?: boolean;
 }) {
   return (
     <div className="space-y-4">
@@ -47,7 +49,7 @@ async function Section({
             <WorkspaceCard
               key={workspace.id}
               workspace={workspace}
-              isOwner={true}
+              isOwner={isOwner}
             />
           ))}
         </div>
@@ -110,6 +112,7 @@ export default async function MainLayout() {
             title="Collaborating Workspaces"
             workspaces={collaboratingWorkspaces}
             fetchWorkspaces={getCollaboratingWorkspaces}
+            isOwner={false}
           />
         </Suspense>
       </div>

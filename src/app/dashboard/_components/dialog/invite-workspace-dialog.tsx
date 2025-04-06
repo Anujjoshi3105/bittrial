@@ -26,7 +26,7 @@ import { useUserStore } from "@/lib/store/use-user-store";
 import useDebounceCallback from "@/lib/hooks/use-debounce-callback";
 import { getWorkspaceDetails } from "@/lib/queries/workspace";
 
-export default function InviteDialog({
+export default function InviteWorkspaceDialog({
   id,
   children,
 }: { id: string } & PropsWithChildren) {

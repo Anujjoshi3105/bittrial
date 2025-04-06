@@ -35,7 +35,7 @@ export default function SidebarTree({
   message = "Create one to get started",
 }: SidebarTreeProps) {
   return (
-    <div className="space-y-1">
+    <div>
       <SidebarTree.Title favorite={favorite} />
       <SidebarTree.Root
         message={message}

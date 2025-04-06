@@ -20,6 +20,8 @@ import { getImage } from "@/lib/queries/storage";
 import { getCollaborators } from "@/lib/queries/collaborator";
 import { useEffect, useState } from "react";
 import { getUser } from "@/lib/queries/auth";
+import LeaveWorkspaceDialog from "./dialog/leave-workspace-dialog";
+import { ExitIcon } from "@radix-ui/react-icons";
 
 export function WorkspaceCard({
   workspace,
@@ -109,7 +111,7 @@ export function WorkspaceCard({
       </Link>
 
       {/* Action Buttons */}
-      {isOwner && (
+      {isOwner ? (
         <div className="absolute right-4 top-4 z-10 flex gap-2 bg-background/80 backdrop-blur-sm p-1 rounded-lg shadow-sm group-hover:opacity-100 opacity-0">
           <EditWorkspaceDialog workspace={workspace}>
             <Button
@@ -129,6 +131,18 @@ export function WorkspaceCard({
               <span className="sr-only">Delete workspace</span>
             </Button>
           </DeleteWorkspaceDialog>
+        </div>
+      ) : (
+        <div className="absolute right-4 top-4 z-10 flex gap-2 bg-background/80 backdrop-blur-sm p-1 rounded-lg shadow-sm group-hover:opacity-100 opacity-0">
+          <LeaveWorkspaceDialog workspace={workspace}>
+            <Button
+              size="smIcon"
+              variant="ghost"
+              className="hover:bg-primary/10">
+              <ExitIcon className="h-4 w-4" />
+              <span className="sr-only">Leave workspace</span>
+            </Button>
+          </LeaveWorkspaceDialog>
         </div>
       )}
     </Card>

@@ -10,7 +10,7 @@ import TrashDialog from "./dialog/trash-dialog";
 import SidebarButton from "./sidebar-button";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import InviteDialog from "./dialog/invite-dialog";
+import InviteWorkspaceDialog from "../../_components/dialog/invite-workspace-dialog";
 
 export default function SidebarMenu() {
   const params = useParams();
@@ -37,12 +37,12 @@ export default function SidebarMenu() {
           Trash
         </SidebarButton>
       </TrashDialog>
-      <InviteDialog id={params?.workspaceID as string}>
+      <InviteWorkspaceDialog id={params?.workspaceID as string}>
         <SidebarButton>
           <MailPlusIcon />
           Invite
         </SidebarButton>
-      </InviteDialog>
+      </InviteWorkspaceDialog>
       <SidebarButton asChild>
         <Link href="/dashboard/settings">
           <SettingsIcon />

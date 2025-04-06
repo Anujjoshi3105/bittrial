@@ -28,7 +28,7 @@ export default function UserPopover({ children, fullname, username }: Props) {
 
   const navigateHandler = (path: "settings") => {
     ref.current?.click();
-    router.push(`/${path}`);
+    router.push(`/dashboard/${path}`);
   };
 
   return (
