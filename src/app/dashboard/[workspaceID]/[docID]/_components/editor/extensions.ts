@@ -24,10 +24,10 @@ import {
 
 import { cx } from "class-variance-authority";
 import { common, createLowlight } from "lowlight";
+import { slashCommand } from "./slash-command";
+import SearchAndReplace from "@/components/extensions/search-and-replace";
 
-//TODO I am using cx here to get tailwind autocomplete working, idk if someone else can write a regex to just capture the class key in objects
 const aiHighlight = AIHighlight;
-//You can overwrite the placeholder with your own configuration
 const placeholder = Placeholder;
 const tiptapLink = TiptapLink.configure({
   HTMLAttributes: {
@@ -171,4 +171,8 @@ export const defaultExtensions = [
   Color,
   CustomKeymap,
   GlobalDragHandle,
+  slashCommand,
+  SearchAndReplace,
+  TextStyle,
+  Color,
 ];

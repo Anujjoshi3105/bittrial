@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Color,
   EditorCommand,
   EditorCommandEmpty,
   EditorCommandItem,
@@ -11,7 +10,6 @@ import {
   EditorRoot,
   ImageResizer,
   type JSONContent,
-  TextStyle,
   handleCommandNavigation,
   handleImageDrop,
   handleImagePaste,
@@ -25,9 +23,8 @@ import { Separator } from "@/components/ui/separator";
 import EditorToolbar from "./toolbar";
 import GenerativeMenuSwitch from "./generative/generative-menu-switch";
 import { uploadFn } from "./image-upload";
-import { slashCommand, suggestionItems } from "./slash-command";
+import { suggestionItems } from "./slash-command";
 import { useDocStore } from "@/lib/store/use-doc-store";
-import SearchAndReplace from "@/components/extensions/search-and-replace";
 import { ImageExtension } from "@/components/extensions/image";
 import { ImagePlaceholder } from "@/components/extensions/image-placeholder";
 import TextAlign from "@tiptap/extension-text-align";
@@ -54,8 +51,6 @@ const handleEmbed = (url: string) => {
 // Add all extensions
 const extensions = [
   ...defaultExtensions,
-  slashCommand,
-  SearchAndReplace,
   TextAlign.configure({
     types: ["heading", "paragraph"],
   }),
@@ -73,8 +68,6 @@ const extensions = [
     onDropRejected: handleDropRejected,
     onEmbed: handleEmbed,
   }),
-  TextStyle,
-  Color,
   Highlight.configure({
     multicolor: true,
   }),
