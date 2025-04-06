@@ -86,8 +86,7 @@ const Editor = () => {
     if (editor) {
       editor.commands.setContent(doc?.content as JSONContent, false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [doc, editor]);
   return (
     <div className="relative w-full max-w-screen-lg">
       <EditorRoot>
