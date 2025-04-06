@@ -84,7 +84,7 @@ const Editor = () => {
 
   useEffect(() => {
     if (editor) {
-      editor.commands.setContent(doc?.content as JSONContent, false);
+      editor.commands.setContent(doc?.content as JSONContent, true);
     }
   }, [doc, editor]);
   return (
