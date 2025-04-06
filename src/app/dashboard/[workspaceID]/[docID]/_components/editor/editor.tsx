@@ -81,23 +81,12 @@ const Editor = () => {
   const debouncedUpdates = useDebouncedCallback(
     async (editor: EditorInstance) => {
       const json = editor.getJSON();
-      window.localStorage.setItem("novel-content", JSON.stringify(json));
       if (doc?.id) updateDocAsync(doc.id, { content: json });
     },
     500
   );
   useEffect(() => {
-    const content = window.localStorage.getItem("novel-content");
-    if (content) {
-      try {
-        setInitialContent(JSON.parse(content));
-      } catch (error) {
-        console.error("Failed to parse stored content:", error);
-        setInitialContent(defaultEditorContent);
-      }
-    } else {
-      setInitialContent(defaultEditorContent);
-    }
+    setInitialContent(defaultEditorContent);
   }, []);
 
   if (!initialContent) return null;
