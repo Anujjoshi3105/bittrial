@@ -13,12 +13,11 @@ import { useEffect } from "react";
 
 export default function DocDetailPage() {
   const params = useParams();
-  const id = params?.docID as string;
   const { getDocAsync } = useDocStore();
 
   useEffect(() => {
-    getDocAsync(id);
-  }, [id, getDocAsync]);
+    getDocAsync(params.docID as string);
+  }, [params, getDocAsync]);
 
   return (
     <ScrollArea className="h-[calc(100vh-48px)]">
