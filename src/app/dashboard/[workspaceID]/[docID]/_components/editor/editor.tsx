@@ -1,6 +1,5 @@
 "use client";
 
-import { defaultEditorContent } from "@/lib/content";
 import {
   EditorCommand,
   EditorCommandEmpty,
@@ -86,8 +85,8 @@ const Editor = () => {
     500
   );
   useEffect(() => {
-    setInitialContent(defaultEditorContent);
-  }, []);
+    setInitialContent(doc?.content as JSONContent);
+  }, [doc?.content]);
 
   if (!initialContent) return null;
 
