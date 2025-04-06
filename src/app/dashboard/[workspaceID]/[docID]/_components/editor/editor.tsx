@@ -14,7 +14,7 @@ import {
   handleImageDrop,
   handleImagePaste,
 } from "novel";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import { defaultExtensions } from "./extensions";
 import { ColorSelector } from "./selectors/color-selector";
@@ -32,6 +32,24 @@ import SearchAndReplace from "@/components/extensions/search-and-replace";
 import { ImageExtension } from "@/components/extensions/image";
 import { ImagePlaceholder } from "@/components/extensions/image-placeholder";
 import TextAlign from "@tiptap/extension-text-align";
+import { EditorView } from "@tiptap/pm/view";
+import { Slice } from "@tiptap/pm/model";
+
+// Configure ImagePlaceholder handlers
+const handleDrop = (files: File[]) => {
+  console.log("Files dropped:", files);
+  // Default handling will continue
+};
+
+const handleDropRejected = (files: File[]) => {
+  console.log("Files rejected:", files);
+  // You could show a toast notification here
+};
+
+const handleEmbed = (url: string) => {
+  console.log("URL embedded:", url);
+  // Default handling will continue
+};
 
 // Add all extensions
 const extensions = [
@@ -51,18 +69,9 @@ const extensions = [
     },
     maxFiles: 1,
     maxSize: 5 * 1024 * 1024, // 5MB
-    onDrop: (files) => {
-      console.log("Files dropped:", files);
-      // Default handling will continue
-    },
-    onDropRejected: (files) => {
-      console.log("Files rejected:", files);
-      // You could show a toast notification here
-    },
-    onEmbed: (url) => {
-      console.log("URL embedded:", url);
-      // Default handling will continue
-    },
+    onDrop: handleDrop,
+    onDropRejected: handleDropRejected,
+    onEmbed: handleEmbed,
   }),
 ];
 
@@ -76,17 +85,56 @@ const Editor = () => {
 
   const debouncedUpdates = useDebouncedCallback(
     async (editor: EditorInstance) => {
+      if (!doc?.id) return;
+
       const json = editor.getJSON();
-      if (doc?.id) updateDocAsync(doc.id, { content: json });
+      await updateDocAsync(doc.id, { content: json });
     },
-    500
+    2000
   );
 
+  // Set editor content when document changes
   useEffect(() => {
-    if (editor) {
-      editor.commands.setContent(doc?.content as JSONContent, true);
+    if (editor && doc?.content) {
+      editor.commands.setContent(doc.content as JSONContent, false);
     }
-  }, [doc, editor]);
+  }, [doc?.id]);
+
+  const handleEditorCreate = useCallback(
+    ({ editor }: { editor: EditorInstance }) => {
+      setEditor(editor);
+    },
+    []
+  );
+
+  const handleEditorUpdate = useCallback(
+    ({ editor }: { editor: EditorInstance }) => {
+      debouncedUpdates(editor);
+    },
+    [debouncedUpdates]
+  );
+
+  const handleKeyDown = useCallback(
+    (_view: EditorView, event: KeyboardEvent) => {
+      return handleCommandNavigation(event);
+    },
+    []
+  );
+
+  const handlePasteEvent = useCallback(
+    (view: EditorView, event: ClipboardEvent) => {
+      return handleImagePaste(view, event, uploadFn);
+    },
+    []
+  );
+
+  const handleDropEvent = useCallback(
+    (view: EditorView, event: DragEvent, slice: Slice, moved: boolean) => {
+      return handleImageDrop(view, event, moved, uploadFn);
+    },
+    []
+  );
+
   return (
     <div className="relative w-full max-w-screen-lg">
       <EditorRoot>
@@ -97,23 +145,17 @@ const Editor = () => {
           className="relative min-h-[500px] w-full max-w-screen-lg bg-muted sm:mb-[calc(20vh)] sm:shadow-lg"
           editorProps={{
             handleDOMEvents: {
-              keydown: (_view, event) => handleCommandNavigation(event),
+              keydown: handleKeyDown,
             },
-            handlePaste: (view, event) =>
-              handleImagePaste(view, event, uploadFn),
-            handleDrop: (view, event, _slice, moved) =>
-              handleImageDrop(view, event, moved, uploadFn),
+            handlePaste: handlePasteEvent,
+            handleDrop: handleDropEvent,
             attributes: {
               class:
                 "prose prose-lg dark:prose-invert prose-headings:font-title font-default focus:outline-none max-w-full",
             },
           }}
-          onUpdate={({ editor }) => {
-            debouncedUpdates(editor);
-          }}
-          onCreate={({ editor }) => {
-            setEditor(editor);
-          }}
+          onUpdate={handleEditorUpdate}
+          onCreate={handleEditorCreate}
           slotAfter={<ImageResizer />}>
           <EditorCommand className="z-50 h-auto max-h-[330px] overflow-y-auto rounded-md border border-muted bg-background px-1 py-2 shadow-md transition-all">
             <EditorCommandEmpty className="px-2 text-muted-foreground">
