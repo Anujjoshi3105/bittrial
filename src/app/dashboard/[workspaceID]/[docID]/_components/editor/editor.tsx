@@ -69,7 +69,7 @@ const extensions = [
 const Editor = () => {
   const { doc, updateDocAsync } = useDocStore();
   const [initialContent, setInitialContent] = useState<null | JSONContent>(
-    doc?.content as JSONContent
+    null
   );
   const [openNode, setOpenNode] = useState(false);
   const [openColor, setOpenColor] = useState(false);
@@ -86,16 +86,14 @@ const Editor = () => {
   );
   useEffect(() => {
     setInitialContent(doc?.content as JSONContent);
-  }, [doc?.content]);
-
-  if (!initialContent) return null;
+  }, []);
 
   return (
     <div className="relative w-full max-w-screen-lg">
       <EditorRoot>
         <EditorToolbar editor={editor} />
         <EditorContent
-          initialContent={initialContent}
+          initialContent={initialContent!}
           extensions={extensions}
           className="relative min-h-[500px] w-full max-w-screen-lg bg-muted sm:mb-[calc(20vh)] sm:shadow-lg"
           editorProps={{
