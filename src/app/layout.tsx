@@ -25,7 +25,7 @@ export default function RootLayout({
         <ThemeProvider
           defaultTheme="light"
           enableSystem
-          disableTransitionOnChange
+          attribute="class"
           storageKey="station-theme">
           <HolyLoader color="linear-gradient(to right, #ff7e5f, #feb47b)" />
 

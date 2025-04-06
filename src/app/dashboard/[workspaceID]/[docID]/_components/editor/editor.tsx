@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Color,
   EditorCommand,
   EditorCommandEmpty,
   EditorCommandItem,
@@ -10,6 +11,7 @@ import {
   EditorRoot,
   ImageResizer,
   type JSONContent,
+  TextStyle,
   handleCommandNavigation,
   handleImageDrop,
   handleImagePaste,
@@ -17,15 +19,12 @@ import {
 import { useEffect, useState, useCallback } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import { defaultExtensions } from "./extensions";
-import { ColorSelector } from "./selectors/color-selector";
 import { LinkSelector } from "./selectors/link-selector";
-import { MathSelector } from "./selectors/math-selector";
 import { NodeSelector } from "./selectors/node-selector";
 import { Separator } from "@/components/ui/separator";
 import EditorToolbar from "./toolbar";
 import GenerativeMenuSwitch from "./generative/generative-menu-switch";
 import { uploadFn } from "./image-upload";
-import { TextButtons } from "./selectors/text-buttons";
 import { slashCommand, suggestionItems } from "./slash-command";
 import { useDocStore } from "@/lib/store/use-doc-store";
 import SearchAndReplace from "@/components/extensions/search-and-replace";
@@ -34,6 +33,7 @@ import { ImagePlaceholder } from "@/components/extensions/image-placeholder";
 import TextAlign from "@tiptap/extension-text-align";
 import { EditorView } from "@tiptap/pm/view";
 import { Slice } from "@tiptap/pm/model";
+import Highlight from "@tiptap/extension-highlight";
 
 // Configure ImagePlaceholder handlers
 const handleDrop = (files: File[]) => {
@@ -73,12 +73,16 @@ const extensions = [
     onDropRejected: handleDropRejected,
     onEmbed: handleEmbed,
   }),
+  TextStyle,
+  Color,
+  Highlight.configure({
+    multicolor: true,
+  }),
 ];
 
 const Editor = () => {
   const { doc, updateDocAsync } = useDocStore();
   const [openNode, setOpenNode] = useState(false);
-  const [openColor, setOpenColor] = useState(false);
   const [openLink, setOpenLink] = useState(false);
   const [openAI, setOpenAI] = useState(false);
   const [editor, setEditor] = useState<EditorInstance | null>(null);
@@ -188,11 +192,6 @@ const Editor = () => {
             <Separator orientation="vertical" />
             <LinkSelector open={openLink} onOpenChange={setOpenLink} />
             <Separator orientation="vertical" />
-            <MathSelector />
-            <Separator orientation="vertical" />
-            <TextButtons />
-            <Separator orientation="vertical" />
-            <ColorSelector open={openColor} onOpenChange={setOpenColor} />
           </GenerativeMenuSwitch>
         </EditorContent>
       </EditorRoot>

@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Repeat, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, FileSearchIcon, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -68,13 +68,12 @@ export function SearchAndReplaceToolbar() {
           <PopoverTrigger disabled={!editor} asChild>
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               onClick={() => {
                 setOpen(!open);
               }}
               className={cn("h-8 w-max px-3 font-normal")}>
-              <Repeat className="mr-2 h-4 w-4" />
-              <p>Search & Replace</p>
+              <FileSearchIcon />
             </Button>
           </PopoverTrigger>
         </TooltipTrigger>
@@ -128,7 +127,7 @@ export function SearchAndReplaceToolbar() {
               size="icon"
               className="size-7"
               variant="ghost">
-              <Repeat className="h-4 w-4" />
+              <FileSearchIcon className="h-4 w-4" />
             </Button>
             <Button
               onClick={() => {
