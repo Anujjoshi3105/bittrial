@@ -14,7 +14,7 @@ import {
   handleImageDrop,
   handleImagePaste,
 } from "novel";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import { defaultExtensions } from "./extensions";
 import { LinkSelector } from "./selectors/link-selector";
@@ -31,6 +31,9 @@ import TextAlign from "@tiptap/extension-text-align";
 import { EditorView } from "@tiptap/pm/view";
 import { Slice } from "@tiptap/pm/model";
 import Highlight from "@tiptap/extension-highlight";
+import Collaboration from "@tiptap/extension-collaboration";
+import * as Y from "yjs";
+import { TiptapCollabProvider } from "@hocuspocus/provider";
 
 // Configure ImagePlaceholder handlers
 const handleDrop = (files: File[]) => {
@@ -48,54 +51,90 @@ const handleEmbed = (url: string) => {
   // Default handling will continue
 };
 
-// Add all extensions
-const extensions = [
-  ...defaultExtensions,
-  TextAlign.configure({
-    types: ["heading", "paragraph"],
-  }),
-  ImageExtension,
-  ImagePlaceholder.configure({
-    HTMLAttributes: {
-      class: "w-full",
-    },
-    allowedMimeTypes: {
-      image: ["image/*"],
-    },
-    maxFiles: 1,
-    maxSize: 5 * 1024 * 1024, // 5MB
-    onDrop: handleDrop,
-    onDropRejected: handleDropRejected,
-    onEmbed: handleEmbed,
-  }),
-  Highlight.configure({
-    multicolor: true,
-  }),
-];
-
 const Editor = () => {
-  const { doc, updateDocAsync } = useDocStore();
+  const { doc: docData, updateDocAsync } = useDocStore();
   const [openNode, setOpenNode] = useState(false);
   const [openLink, setOpenLink] = useState(false);
   const [openAI, setOpenAI] = useState(false);
   const [editor, setEditor] = useState<EditorInstance | null>(null);
+  const yDocRef = useRef(new Y.Doc());
+  const providerRef = useRef<TiptapCollabProvider | null>(null);
+
+  // Create the extensions once to avoid recreating them
+  const extensions = [
+    ...defaultExtensions,
+    TextAlign.configure({
+      types: ["heading", "paragraph"],
+    }),
+    ImageExtension,
+    ImagePlaceholder.configure({
+      HTMLAttributes: {
+        class: "w-full",
+      },
+      allowedMimeTypes: {
+        image: ["image/*"],
+      },
+      maxFiles: 1,
+      maxSize: 5 * 1024 * 1024, // 5MB
+      onDrop: handleDrop,
+      onDropRejected: handleDropRejected,
+      onEmbed: handleEmbed,
+    }),
+    Highlight.configure({
+      multicolor: true,
+    }),
+    Collaboration.configure({
+      document: yDocRef.current,
+    }),
+  ];
 
   const debouncedUpdates = useDebouncedCallback(
     async (editor: EditorInstance) => {
-      if (!doc?.id) return;
+      if (!docData?.id) return;
 
       const json = editor.getJSON();
-      await updateDocAsync(doc.id, { content: json });
+      await updateDocAsync(docData.id, { content: json });
     },
     2000
   );
 
-  // Set editor content when document changes
+  // Setup collaboration when document ID changes
   useEffect(() => {
-    if (editor && doc?.content) {
-      editor.commands.setContent(doc.content as JSONContent, false);
+    if (!docData?.id || !editor) return;
+
+    // Clean up previous provider if it exists
+    if (providerRef.current) {
+      providerRef.current.destroy();
     }
-  }, [doc?.id]);
+
+    // Create new provider with current document ID
+    providerRef.current = new TiptapCollabProvider({
+      name: docData.id, // Unique document identifier for syncing
+      appId: "x9lo6gv9", // Your Cloud Dashboard AppID
+      token: "G1XVPfkt2UiMxBF9waxv4lifNteADEvrybB12qm0yT8g7fRJpPA7dRfAn5tiAuxX", // Your JWT token
+      document: yDocRef.current,
+      onSynced() {
+        // Only set initial content if it hasn't been set yet
+        if (
+          !yDocRef.current.getMap("config").get("initialContentLoaded") &&
+          editor
+        ) {
+          yDocRef.current.getMap("config").set("initialContentLoaded", true);
+
+          // Set content from docData if available
+          if (docData?.content) {
+            editor.commands.setContent(docData.content as JSONContent);
+          }
+        }
+      },
+    });
+
+    return () => {
+      if (providerRef.current) {
+        providerRef.current.destroy();
+      }
+    };
+  }, [docData?.id, editor]);
 
   const handleEditorCreate = useCallback(
     ({ editor }: { editor: EditorInstance }) => {
@@ -137,7 +176,6 @@ const Editor = () => {
       <EditorRoot>
         <EditorToolbar editor={editor} />
         <EditorContent
-          initialContent={doc?.content as JSONContent}
           extensions={extensions}
           className="relative min-h-[500px] w-full max-w-screen-lg bg-muted sm:mb-[calc(20vh)] sm:shadow-lg"
           editorProps={{
